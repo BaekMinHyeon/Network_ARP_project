@@ -5,7 +5,7 @@ public class ARPLayer implements BaseLayer {
     public int nUpperLayerCount = 0;
     public String pLayerName = null;
     public BaseLayer p_UnderLayer = null;
-    public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
+    public ArrayList<BaseLayer>차 p_aUpperLayer = new ArrayList<BaseLayer>();
     public ArrayList<_ARP_ARR> proxyTable = new ArrayList<_ARP_ARR>();
     public ArrayList<_ARP_ARR> arpTable = new ArrayList<_ARP_ARR>();
     _ARP_Frame m_sHeader;
