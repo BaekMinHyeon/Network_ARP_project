@@ -47,9 +47,29 @@ public class IPLayer implements BaseLayer {
     	}
     }
     
+    private byte[] intToByte2(int value) {
+        byte[] temp = new byte[2];
+        temp[0] |= (byte) ((value & 0xFF00) >> 8);
+        temp[1] |= (byte) (value & 0xFF);
+
+        return temp;
+    }
+
+    private int byte2ToInt(byte value1, byte value2) {
+        return (int)(((value1 & 0xff) << 8) | (value2 & 0xff));
+    }
+    
     public IPLayer(String pName){
     	pLayerName = pName;
     	m_sHeader = new _IP();
+    }
+    
+    public void SetIPSrcAddress(byte[] srcAddress){
+    	m_sHeader.ip_src.addr = srcAddress;
+    }
+    
+    public void SetIPDstAddress(byte[] dstAddress){
+    	m_sHeader.ip_dst.addr = dstAddress;
     }
     
 	@Override
