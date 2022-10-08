@@ -3,13 +3,14 @@ import java.util.ArrayList;
 
 interface BaseLayer {
 	public final int m_nUpperLayerCount = 0;
+	public final int m_nUnderLayerCount = 0;
 	public final String m_pLayerName = null;
-	public final BaseLayer mp_UnderLayer = null;
+	public final ArrayList<BaseLayer> mp_aUnderLayer = new ArrayList<BaseLayer>();
 	public final ArrayList<BaseLayer> mp_aUpperLayer = new ArrayList<BaseLayer>();
 
 	public String GetLayerName();
 
-	public BaseLayer GetUnderLayer();
+	public BaseLayer GetUnderLayer(int nindex);
 
 	public BaseLayer GetUpperLayer(int nindex);
 
