@@ -1,16 +1,16 @@
-import java.util.*;
+import java.util.ArrayList;
 
 public class ARPLayer implements BaseLayer {
 
     public int nUpperLayerCount = 0;
     public String pLayerName = null;
     public BaseLayer p_UnderLayer = null;
-    public ArrayList<BaseLayer>차 p_aUpperLayer = new ArrayList<BaseLayer>();
+    public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
     public ArrayList<_ARP_ARR> proxyTable = new ArrayList<_ARP_ARR>();
     public ArrayList<_ARP_ARR> arpTable = new ArrayList<_ARP_ARR>();
     _ARP_Frame m_sHeader;
 
-    public ArpLayer(String pName) {
+    public ARPLayer(String pName) {
         // super(pName);
         // TODO Auto-generated constructor stub
         pLayerName = pName;
@@ -47,7 +47,7 @@ public class ARPLayer implements BaseLayer {
         return buf;
     }
 
-    public byte[] ProxyObjToByte(_ARP_Frame Header, byte[] input, int length) {//data에 헤더 붙여주기
+    public byte[] ProxyObjToByte(_ARP_Frame Header, byte[] input, int length) {//data에 헤더 붙여주
         byte[] temp = new byte[1];
 
         for(int i = 0; i < 6; i++) {
@@ -100,7 +100,7 @@ public class ARPLayer implements BaseLayer {
         return input;
     }
 
-    public void DestinationSet(byte[] input, int length) {
+    public void DestinationSet(byte[] input) {
         m_sHeader.enet_target_addr.addr[0] = input[8];
         m_sHeader.enet_target_addr.addr[1] = input[9];
         m_sHeader.enet_target_addr.addr[2] = input[10];
@@ -115,14 +115,16 @@ public class ARPLayer implements BaseLayer {
 
     public boolean ArpTableSet() {
         for(_ARP_ARR addr : arpTable){
-            if(addr.ip_target_addr == m_sHeader.ip_target_addr)
-                return false;
+            if(addr.ip_target_addr.addr == m_sHeader.ip_target_addr.addr) {
+                addr.enet_target_addr.addr = m_sHeader.enet_target_addr.addr;
+                return true;
+            }
         }
-        arpTable.add(new _ARP_ARR(m_sHeader.enet_target_addr, m_sHeader.ip_sender_addr));
+        arpTable.add(new _ARP_ARR(m_sHeader.enet_target_addr.addr, m_sHeader.ip_target_addr.addr));
         return true;
     }
 
-    public byte[] ProxyTableSet(byte[] enthernet_addr, byte[] ip_addr) {
+    public boolean ProxyTableSet(byte[] enthernet_addr, byte[] ip_addr) {
         proxyTable.add(new _ARP_ARR(enthernet_addr, ip_addr));
         return true;
     }
@@ -140,8 +142,8 @@ public class ARPLayer implements BaseLayer {
             }
             else{
                 //프록시 테이블 확인
-                for (_PROXY_ARP_ARR addr : proxyTable){
-                    if (chkProxyAddr(addr.ip_target_addr, input)) {
+                for (_ARP_ARR addr : proxyTable){
+                    if (chkProxyAddr(addr.ip_target_addr.addr, input)) {
                         ArpTableSet();
                         this.ProxySend(input, input.length);
                     }
@@ -179,7 +181,7 @@ public class ARPLayer implements BaseLayer {
 
     private boolean isMyPacket(byte[] input){
         for(int i = 0; i < 4; i++)
-            if(m_sHeader.ip_sender_addr.arr[i] != input[14 + i])
+            if(m_sHeader.ip_sender_addr.addr[i] != input[14 + i])
                 return false;
         return true;
     }
@@ -200,7 +202,7 @@ public class ARPLayer implements BaseLayer {
 
     public void SetEnetSrcAddress(byte[] srcAddress) {
         // TODO Auto-generated method stub
-        m_sHeader.enet_sender_addr.arr = srcAddress;
+        m_sHeader.enet_sender_addr.addr = srcAddress;
     }
 
     public void SetEnetDstAddress(byte[] dstAddress) {
@@ -273,7 +275,7 @@ public class ARPLayer implements BaseLayer {
             this.addr[4] = 0;
             this.addr[5] = 0;
         }
-        public _ARP_ENTHERNET_ADDR(_ARP_ENTHERNET_ADDR tempaddr) {
+        public _ARP_ENTHERNET_ADDR(byte[] tempaddr) {
             this.addr[0] = tempaddr[0];
             this.addr[1] = tempaddr[1];
             this.addr[2] = tempaddr[2];
@@ -293,7 +295,7 @@ public class ARPLayer implements BaseLayer {
             this.addr[3] = 0;
         }
 
-        public _ARP_IP_ADDR(_ARP_IP_ADDR tempaddr) {
+        public _ARP_IP_ADDR(byte[] tempaddr) {
             this.addr[0] = tempaddr[0];
             this.addr[1] = tempaddr[1];
             this.addr[2] = tempaddr[2];
@@ -311,11 +313,11 @@ public class ARPLayer implements BaseLayer {
 
         byte[] opcode = new byte[2];
 
-        _ARP_ENTHERNET_ADDR enet_sender_addr = ArpLayer.this.new _ARP_ENTHERNET_ADDR();
-        _ARP_IP_ADDR ip_sender_addr = ArpLayer.this.new _ARP_IP_ADDR();
+        _ARP_ENTHERNET_ADDR enet_sender_addr = ARPLayer.this.new _ARP_ENTHERNET_ADDR();
+        _ARP_IP_ADDR ip_sender_addr = ARPLayer.this.new _ARP_IP_ADDR();
 
-        _ARP_ENTHERNET_ADDR enet_target_addr = ArpLayer.this.new _ARP_ENTHERNET_ADDR();
-        _ARP_IP_ADDR ip_target_addr = ArpLayer.this.new _ARP_IP_ADDR();
+        _ARP_ENTHERNET_ADDR enet_target_addr = ARPLayer.this.new _ARP_ENTHERNET_ADDR();
+        _ARP_IP_ADDR ip_target_addr = ARPLayer.this.new _ARP_IP_ADDR();
 
         public _ARP_Frame() {
             hard_type[0] = 0x01;
@@ -332,9 +334,9 @@ public class ARPLayer implements BaseLayer {
         _ARP_ENTHERNET_ADDR enet_target_addr;
         _ARP_IP_ADDR ip_target_addr;
 
-        public _ARP_ARR(_ARP_ENTHERNET_ADDR enthernet_addr, _ARP_IP_ADDR ip_addr) {
-            enet_target_addr = enthernet_addr;
-            ip_target_addr = ip_addr;
+        public _ARP_ARR(byte[] enthernet_addr, byte[] ip_addr) {
+            enet_target_addr = new _ARP_ENTHERNET_ADDR(enthernet_addr);
+            ip_target_addr = new _ARP_IP_ADDR(ip_addr);
         }
     }
 
