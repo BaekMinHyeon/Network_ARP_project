@@ -1,13 +1,24 @@
 import java.util.ArrayList;
 
 public class IPLayer implements BaseLayer {
-	
+	public int nUnderLayerCount = 0;
 	public int nUpperLayerCount = 0;
     public String pLayerName = null;
-    public BaseLayer p_UnderLayer = null;
+    public ArrayList<BaseLayer> p_aUnderLayer = new ArrayList<BaseLayer>();
     public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
     _IP m_sHeader;
     
+    private int Header_Size = 20;
+    private int Max_Data = 1480;
+    private int offset = 185;
+    private byte[] FragmentCollect;
+    
+    //----------생성자-------------
+    public IPLayer(String pName){
+    	pLayerName = pName;
+    	m_sHeader = new _IP();
+    }
+    //------------frame-------------
     private class _IP {
     	byte ip_verlen; // 1byte
     	byte ip_tos; // 1byte
@@ -19,17 +30,18 @@ public class IPLayer implements BaseLayer {
     	byte[] ip_cksum; // 2byte
     	_IP_ADDR ip_src; // 4byte
     	_IP_ADDR ip_dst; // 4byte
+    	// 여기까지 IP의 Header
     	byte[] ip_data; // variable length data
     	
     	public _IP(){
-    		ip_verlen = 0x00; // git에는 0x45이유는 모르겠음
-    		ip_tos = 0x00;
+    		ip_verlen = 0x45;
+    		ip_tos = 0x00; // not use
     		ip_len = new byte[2];
-    		ip_id = new byte[2];
+    		ip_id = new byte[2]; // not use
     		ip_fragoff = new byte[2];
-    		ip_ttl = 0x00;
-    		ip_proto = 0x00;
-    		ip_cksum = new byte[2];
+    		ip_ttl = 0x00; // not use
+    		ip_proto = 0x06;
+    		ip_cksum = new byte[2]; // not use
     		ip_src = new _IP_ADDR();
     		ip_dst = new _IP_ADDR();
     		ip_data = null;
@@ -47,6 +59,8 @@ public class IPLayer implements BaseLayer {
     	}
     }
     
+
+    
     private byte[] intToByte2(int value) {
         byte[] temp = new byte[2];
         temp[0] |= (byte) ((value & 0xFF00) >> 8);
@@ -59,11 +73,6 @@ public class IPLayer implements BaseLayer {
         return (int)(((value1 & 0xff) << 8) | (value2 & 0xff));
     }
     
-    public IPLayer(String pName){
-    	pLayerName = pName;
-    	m_sHeader = new _IP();
-    }
-    
     public void SetIPSrcAddress(byte[] srcAddress){
     	m_sHeader.ip_src.addr = srcAddress;
     }
@@ -72,18 +81,19 @@ public class IPLayer implements BaseLayer {
     	m_sHeader.ip_dst.addr = dstAddress;
     }
     
+    //-------------- BaseLayer 상속-------------------
 	@Override
 	public String GetLayerName() {
 		return pLayerName;
 	}
-
+	
 	@Override
-	public BaseLayer GetUnderLayer() {
-		if (p_UnderLayer == null)
+	public BaseLayer GetUnderLayer(int nindex) {
+		if (nindex < 0 || nindex > nUnderLayerCount || nUnderLayerCount < 0)
 			return null;
-		return p_UnderLayer;
+		return p_aUnderLayer.get(nindex);
 	}
-
+	
 	@Override
 	public BaseLayer GetUpperLayer(int nindex) {
 		if (nindex < 0 || nindex > nUpperLayerCount || nUpperLayerCount < 0)
@@ -95,7 +105,7 @@ public class IPLayer implements BaseLayer {
 	public void SetUnderLayer(BaseLayer pUnderLayer) {
 		if (pUnderLayer == null)
 			return;
-		this.p_UnderLayer = pUnderLayer;
+		this.p_aUnderLayer.add(nUnderLayerCount++, pUnderLayer);
 	}
 
 	@Override
@@ -110,4 +120,5 @@ public class IPLayer implements BaseLayer {
 		this.SetUpperLayer(pUULayer);
 		pUULayer.SetUnderLayer(this);
 	}
+	
 }
