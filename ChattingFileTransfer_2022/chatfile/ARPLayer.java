@@ -66,20 +66,23 @@ public class ARPLayer implements BaseLayer {
     }
 
     public boolean Send(byte[] input, int length) {
-        if (input == null && length == 0) {// ack
-            //화면 출력
-            m_sHeader.opcode = intToByte2(2);
-        }
-        else {
-            //화면 출력
-            m_sHeader.opcode = intToByte2(1);
-        }
+        m_sHeader.opcode = intToByte2(1);
 
         byte[] bytes = ObjToByte(m_sHeader, input, length);
 
         this.GetUnderLayer().SendArp(bytes, bytes.length);
         return true;
     }
+
+    public boolean ReturnSend(byte[] input, int length) {
+        m_sHeader.opcode = intToByte2(2);
+
+        byte[] bytes = ObjToByte(m_sHeader, input, length);
+
+        this.GetUnderLayer().SendArp(bytes, bytes.length);
+        return true;
+    }
+
 
     public boolean ProxySend(byte[] input, int length) {
 
@@ -133,10 +136,10 @@ public class ARPLayer implements BaseLayer {
         byte[] data;
         int temp_type = byte2ToInt(input[6], input[7]);
         if (temp_type == 1) {
+            DestinationSet(input);
+            ArpTableSet();
             if(!isMyPacket(input) && chkAddr(input)){
-                DestinationSet(input);
-                ArpTableSet();
-                this.Send(null, 0);
+                this.ReturnSend(null, 0);
                 //화면 출력
                 return true;
             }
@@ -144,7 +147,6 @@ public class ARPLayer implements BaseLayer {
                 //프록시 테이블 확인
                 for (_ARP_ARR addr : proxyTable){
                     if (chkProxyAddr(addr.ip_target_addr.addr, input)) {
-                        ArpTableSet();
                         this.ProxySend(input, input.length);
                     }
                 }
@@ -152,8 +154,8 @@ public class ARPLayer implements BaseLayer {
             }
         }
         else if (temp_type == 2) {
+            DestinationSet(input);
             ArpTableSet();
-
             //테이블 출력
             return true;
         }
