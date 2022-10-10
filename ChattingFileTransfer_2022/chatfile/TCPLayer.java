@@ -3,12 +3,14 @@ import java.util.ArrayList;
 //port를 확인해서 chatapp인지,fileapp인지 구분하여 전달
 public class TCPLayer implements BaseLayer {
 
+	int nUnderLayerCount = 0;
 	int nUpperLayerCount = 0;
 	String pLayerName = null;
-	BaseLayer p_UnderLayer = null;
+	ArrayList<BaseLayer> p_aUnderLayer = new ArrayList<BaseLayer>();
 	ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
 	_TCP_Frame m_sHeader;
-
+	int Header_size = 24;
+	
 	static int CHAT_PORT = 0;
 	static int FILE_PORT = 1;
 
@@ -71,7 +73,7 @@ public class TCPLayer implements BaseLayer {
 		} else {
 			m_sHeader.tcp_flag = 0x00;// 단편화 안 된 경우
 			bytes = ObjToByte(m_sHeader, input, length);
-			this.GetUnderLayer().Send(bytes, bytes.length);
+			this.GetUnderLayer(0).Send(bytes, bytes.length);
 		}
 		return true;
 	}
@@ -86,7 +88,7 @@ public class TCPLayer implements BaseLayer {
 		m_sHeader.tcp_flag = 0x01;
 		System.arraycopy(input, 0, bytes, 0, maxDataLen);
 		bytes = ObjToByte(m_sHeader, bytes, maxDataLen);
-		this.GetUnderLayer().Send(bytes, bytes.length);
+		this.GetUnderLayer(0).Send(bytes, bytes.length);
 
 		int maxLen = length / maxDataLen;
 
@@ -104,17 +106,17 @@ public class TCPLayer implements BaseLayer {
 				}
 				System.arraycopy(input, maxDataLen * i, bytes, 0, len);
 				bytes = ObjToByte(m_sHeader, bytes, len);
-				this.GetUnderLayer().Send(bytes, bytes.length);
+				this.GetUnderLayer(0).Send(bytes, bytes.length);
 			} else {
 				System.arraycopy(input, maxDataLen * i, bytes, 0, maxDataLen);
 				bytes = ObjToByte(m_sHeader, bytes, maxDataLen);
-				this.GetUnderLayer().Send(bytes, bytes.length);
+				this.GetUnderLayer(0).Send(bytes, bytes.length);
 			}
 		}
 	}
 
-	public boolean arpSend(byte[] input, int length) {
-		this.GetUnderLayer().arpSend(input, length);
+	public boolean arpSend(byte[] dstAddr) {
+		this.GetUnderLayer(0).arpSend(dstAddr);
 		return true;
 	}
 
@@ -138,7 +140,7 @@ public class TCPLayer implements BaseLayer {
 	public byte[] ObjToByte(_TCP_Frame Header, byte[] input, int length) {// data에
 																			// 헤더
 																			// 붙여주기
-		byte[] buf = new byte[length + 24];
+		byte[] buf = new byte[length + Header_size];
 		for (int i = 0; i < 2; i++) {
 			buf[i] = Header.tcp_sport[i];
 			buf[i + 2] = Header.tcp_dport[i];
@@ -164,8 +166,8 @@ public class TCPLayer implements BaseLayer {
 	}
 
 	public byte[] RemoveTCPHeader(byte[] input, int length) {
-		byte[] cpyInput = new byte[length - 24];
-		System.arraycopy(input, 24, cpyInput, 0, length - 24);
+		byte[] cpyInput = new byte[length - Header_size];
+		System.arraycopy(input, Header_size, cpyInput, 0, length - Header_size);
 		input = cpyInput;
 		return input;
 	}
@@ -188,10 +190,10 @@ public class TCPLayer implements BaseLayer {
 	}
 
 	@Override
-	public BaseLayer GetUnderLayer() {
-		if (p_UnderLayer == null)
+	public BaseLayer GetUnderLayer(int nindex) {
+		if (nindex < 0 || nindex > nUnderLayerCount || nUnderLayerCount < 0)
 			return null;
-		return p_UnderLayer;
+		return p_aUnderLayer.get(nindex);
 	}
 
 	@Override
@@ -205,7 +207,7 @@ public class TCPLayer implements BaseLayer {
 	public void SetUnderLayer(BaseLayer pUnderLayer) {
 		if (pUnderLayer == null)
 			return;
-		this.p_UnderLayer = pUnderLayer;
+		this.p_aUnderLayer.add(nUnderLayerCount++, pUnderLayer);
 	}
 
 	@Override
