@@ -74,20 +74,14 @@ public class IPLayer implements BaseLayer {
     			setHeader(length, 1, 1, sequence * offset);
     	}
     	byte[] data = ObjToByte(m_sHeader, input, length); // header 추가
-    	EthernetLayer ethernetLayer = (EthernetLayer)this.GetUnderLayer(1); // 0일지 1일지 Dlg를 만들지 않아 미정
+    	EthernetLayer ethernetLayer = (EthernetLayer)this.GetUnderLayer(0); 
     	ethernetLayer.Send(data, data.length);
     	return true;
     }
     
-    public boolean SendARP(byte[] dstAddr){
-    	ARPLayer arpLayer = (ARPLayer)this.GetUnderLayer(0); // 0일지 1일지 Dlg를 만들지 않아 미정
-    	arpLayer.; // 메소드 이름 몰라서 아직 안씀
-    	return true;
-    }
-    
-    public boolean SendGARP(byte[] srcMac){
-    	ARPLayer arpLayer = (ARPLayer)this.GetUnderLayer(0); // 0일지 1일지 Dㅣg를 만들지 않아 미정
-    	arpLayer.; // 메소드 이름 몰라서 아직 안씀
+    public boolean arpSend(){
+    	ARPLayer arpLayer = (ARPLayer)this.GetUnderLayer(1);
+    	arpLayer.Send();
     	return true;
     }
     
