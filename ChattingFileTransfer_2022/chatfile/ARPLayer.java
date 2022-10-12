@@ -1,10 +1,13 @@
+package ChattingFileTransfer_2022.chatfile;
+
 import java.util.ArrayList;
 
 public class ARPLayer implements BaseLayer {
 
     public int nUpperLayerCount = 0;
+    public int nUnderLayerCount = 0;
     public String pLayerName = null;
-    public BaseLayer p_UnderLayer = null;
+    public ArrayList<BaseLayer> p_UnderLayer = new ArrayList<BaseLayer>();
     public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
     public ArrayList<_ARP_ARR> proxyTable = new ArrayList<_ARP_ARR>();
     public ArrayList<_ARP_ARR> arpTable = new ArrayList<_ARP_ARR>();
@@ -21,8 +24,8 @@ public class ARPLayer implements BaseLayer {
         m_sHeader = new _ARP_Frame();
     }
 
-    public byte[] ObjToByte(_ARP_Frame Header, byte[] input, int length) {//data에 헤더 붙여주기
-        byte[] buf = new byte[length + 28];
+    public byte[] ObjToByte(_ARP_Frame Header) {//data에 헤더 붙여주기
+        byte[] buf = new byte[28];
         for(int i = 0; i < 2; i++) {
             buf[i] = Header.hard_type[i];
             buf[i+2] = Header.prot_type[i];
@@ -41,9 +44,6 @@ public class ARPLayer implements BaseLayer {
             buf[i+14] = Header.ip_sender_addr.addr[i];
             buf[i+24] = Header.ip_target_addr.addr[i];
         }
-        for (int i = 0; i < length; i++)
-            buf[14 + i] = input[i];
-
         return buf;
     }
 
@@ -65,21 +65,23 @@ public class ARPLayer implements BaseLayer {
         return input;
     }
 
-    public boolean Send(byte[] input, int length) {
+    public boolean Send() {
         m_sHeader.opcode = intToByte2(1);
 
-        byte[] bytes = ObjToByte(m_sHeader, input, length);
+        byte[] bytes = ObjToByte(m_sHeader);
 
-        this.GetUnderLayer().SendArp(bytes, bytes.length);
+        this.GetUnderLayer(0).arpSend(bytes, bytes.length);
         return true;
     }
 
-    public boolean ReturnSend(byte[] input, int length) {
+    public boolean ReturnSend() {
         m_sHeader.opcode = intToByte2(2);
 
-        byte[] bytes = ObjToByte(m_sHeader, input, length);
+        byte[] bytes = ObjToByte(m_sHeader);
 
-        this.GetUnderLayer().SendArp(bytes, bytes.length);
+        this.GetUpperLayer(0).
+                //""
+        this.GetUnderLayer(0).arpSend(bytes, bytes.length);
         return true;
     }
 
@@ -88,10 +90,9 @@ public class ARPLayer implements BaseLayer {
 
         m_sHeader.opcode = intToByte2(2);
 
-
         byte[] bytes = ProxyObjToByte(m_sHeader, input, length);
 
-        this.GetUnderLayer().SendArp(bytes, bytes.length);
+        this.GetUnderLayer(0).arpSend(bytes, bytes.length);
 
         return true;
     }
@@ -120,6 +121,9 @@ public class ARPLayer implements BaseLayer {
         for(_ARP_ARR addr : arpTable){
             if(addr.ip_target_addr.addr == m_sHeader.ip_target_addr.addr) {
                 addr.enet_target_addr.addr = m_sHeader.enet_target_addr.addr;
+                for(_ARP_ARR addr : arpTable) {
+                    GetUpperLayer(0).ArpCacheTableArea.setText(addr.ip_target_addr);
+                }
                 return true;
             }
         }
@@ -127,11 +131,34 @@ public class ARPLayer implements BaseLayer {
         return true;
     }
 
+    public boolean ArpTableDelete(byte[] enthernet_addr, byte[] ip_addr) {
+        for(int i = 0; i < arpTable.size(); i++){
+            if (arpTable.get(i).enet_target_addr.equals(enthernet_addr) &&
+                    arpTable.get(i).ip_target_addr.equals(ip_addr)) {
+                arpTable.remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    public boolean ProxyTableDelete(byte[] enthernet_addr, byte[] ip_addr) {
+        for(int i = 0; i < proxyTable.size(); i++){
+            if (proxyTable.get(i).enet_target_addr.equals(enthernet_addr) &&
+              proxyTable.get(i).ip_target_addr.equals(ip_addr)) {
+                proxyTable.remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean ProxyTableSet(byte[] enthernet_addr, byte[] ip_addr) {
         proxyTable.add(new _ARP_ARR(enthernet_addr, ip_addr));
         return true;
     }
-    //
+
     public synchronized boolean Receive(byte[] input) {
         byte[] data;
         int temp_type = byte2ToInt(input[6], input[7]);
@@ -139,8 +166,9 @@ public class ARPLayer implements BaseLayer {
             DestinationSet(input);
             ArpTableSet();
             if(!isMyPacket(input) && chkAddr(input)){
-                this.ReturnSend(null, 0);
+                this.ReturnSend();
                 //화면 출력
+
                 return true;
             }
             else{
@@ -229,11 +257,11 @@ public class ARPLayer implements BaseLayer {
     }
 
     @Override
-    public BaseLayer GetUnderLayer() {
+    public BaseLayer GetUnderLayer(int nindex) {
         // TODO Auto-generated method stub
-        if (p_UnderLayer == null)
+        if (nindex < 0 || nindex > nUnderLayerCount || nUnderLayerCount < 0)
             return null;
-        return p_UnderLayer;
+        return p_UnderLayer.get(nindex);
     }
 
     @Override
@@ -247,9 +275,9 @@ public class ARPLayer implements BaseLayer {
     @Override
     public void SetUnderLayer(BaseLayer pUnderLayer) {
         // TODO Auto-generated method stub
-        if (pUnderLayer == null)
+        if (p_UnderLayer == null)
             return;
-        this.p_UnderLayer = pUnderLayer;
+        this.p_UnderLayer.add(nUpperLayerCount++, pUnderLayer);
     }
 
     @Override
@@ -259,12 +287,13 @@ public class ARPLayer implements BaseLayer {
             return;
         this.p_aUpperLayer.add(nUpperLayerCount++, pUpperLayer);
     }
-
     @Override
-    public void SetUpperUnderLayer(BaseLayer pUULayer) {
+    public void SetUpperUnderLayer(BaseLayer pUULayer)
+    {
         this.SetUpperLayer(pUULayer);
         pUULayer.SetUnderLayer(this);
     }
+
 
     private class _ARP_ENTHERNET_ADDR {
         private byte[] addr = new byte[6];
