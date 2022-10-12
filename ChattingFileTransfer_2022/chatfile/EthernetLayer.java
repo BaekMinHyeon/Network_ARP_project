@@ -79,7 +79,7 @@ public class EthernetLayer implements BaseLayer {
 	public boolean arpSend(byte[] input, int length) {
 		int opcode = byte2ToInt(input[6], input[7]);
 		if (opcode == 1) {
-			byte[] b = intToByte2(0xff);
+			byte[] b = intToByte2(0xffff);
 			byte[] broad = new byte[6];
 			for(int i = 0; i < 6; i+=2){
 				System.arraycopy(b, 0, broad, i, b.length);
@@ -143,7 +143,7 @@ public class EthernetLayer implements BaseLayer {
 		for (int i = 0; i < 6; i++)
 			if (bytes[i] != (byte) 0xff)
 				return false;
-		return (bytes[12] == (byte) 0xff && bytes[13] == (byte) 0xff);
+		return true;
 	}
 
 	private boolean isMyPacket(byte[] input) {

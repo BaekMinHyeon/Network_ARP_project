@@ -51,7 +51,7 @@ public class ARPLayer implements BaseLayer {
 
         for(int i = 0; i < 6; i++) {
             temp[0] = input[i+8];
-            input[i+8] = input[i+18];
+            input[i+8] = m_sHeader.enet_sender_addr.addr[i];;
             input[i+18] = temp[0];
         }
 
@@ -118,18 +118,33 @@ public class ARPLayer implements BaseLayer {
     }
 
     public boolean ArpTableSet() {
+    	ChatFileDlg chatfiledlg = (ChatFileDlg)this.GetUpperLayer(0);
         for(_ARP_ARR addr : arpTable){
             if(addr.ip_target_addr.addr == m_sHeader.ip_target_addr.addr) {
                 addr.enet_target_addr.addr = m_sHeader.enet_target_addr.addr;
-                for(_ARP_ARR addr2 : arpTable) {
-                	ChatFileDlg chatfiledlg = (ChatFileDlg)GetUpperLayer(0);
-                    //chatfiledlg.ArpCacheTableArea.setText(addr2.ip_target_addr);
-                	System.out.println(addr2.ip_target_addr);
+                String s = "";
+                for (int i = 0; i < arpTable.size(); i++){
+                	s += new java.math.BigInteger(arpTable.get(i).ip_target_addr.addr).toString(16) + "   "  + new java.math.BigInteger(arpTable.get(i).enet_target_addr.addr).toString(16) + "   complete\n";
                 }
                 return true;
             }
         }
         arpTable.add(new _ARP_ARR(m_sHeader.enet_target_addr.addr, m_sHeader.ip_target_addr.addr));
+        String s = "";
+        for (int i = 0; i < arpTable.size(); i++){
+        	String address = new java.math.BigInteger(arpTable.get(i).enet_target_addr.addr).toString(16);
+        	String real_address = "";
+        	while(address.length() != 12){
+        		address = "0" + address;
+        	}
+        	for(int j = 0; j < address.length(); j++){
+        		real_address += address.charAt(j);
+        		if(j % 2 == 1 && j != address.length()-1)
+        			real_address += "-";
+        	}
+            s += new java.math.BigInteger(arpTable.get(i).ip_target_addr.addr).toString(16) + "   "  + real_address + "   complete\n";
+        }
+        chatfiledlg.tablePrint(s);
         return true;
     }
 
@@ -180,7 +195,6 @@ public class ARPLayer implements BaseLayer {
                         this.ProxySend(input, input.length);
                     }
                 }
-                //화면 출력(테이블 저장)
             }
         }
         else if (temp_type == 2) {
@@ -297,7 +311,7 @@ public class ARPLayer implements BaseLayer {
     }
 
 
-    private class _ARP_ENTHERNET_ADDR {
+    public class _ARP_ENTHERNET_ADDR {
         private byte[] addr = new byte[6];
 
         public _ARP_ENTHERNET_ADDR() {
@@ -318,7 +332,7 @@ public class ARPLayer implements BaseLayer {
         }
     }
 
-    private class _ARP_IP_ADDR {
+    public class _ARP_IP_ADDR {
         private byte[] addr = new byte[4];
 
         public _ARP_IP_ADDR() {
@@ -337,7 +351,7 @@ public class ARPLayer implements BaseLayer {
     }
 
 
-    private class _ARP_Frame {
+    public class _ARP_Frame {
         byte[] hard_type = new byte[2];
         byte[] prot_type = new byte[2];
 
@@ -362,7 +376,7 @@ public class ARPLayer implements BaseLayer {
         }
     }
 
-    private class _ARP_ARR {
+    public class _ARP_ARR {
 
         _ARP_ENTHERNET_ADDR enet_target_addr;
         _ARP_IP_ADDR ip_target_addr;
