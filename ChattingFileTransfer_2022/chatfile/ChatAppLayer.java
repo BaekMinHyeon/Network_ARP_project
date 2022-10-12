@@ -8,10 +8,6 @@ public class ChatAppLayer implements BaseLayer {
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
 	_CHAT_APP m_sHeader;
 
-	private byte[] fragBytes;
-	private int fragCount = 0;
-	private ArrayList<Boolean> ackChk = new ArrayList<Boolean>();
-
 	private int Header_size = 4;
 
 	private class _CHAT_APP {
@@ -65,7 +61,8 @@ public class ChatAppLayer implements BaseLayer {
 		m_sHeader.capp_totlen = intToByte2(length);
 		m_sHeader.capp_type = (byte) (0x00);
 		bytes = objToByte(m_sHeader, input, input.length);
-		this.GetUnderLayer(0).chatSend(bytes, bytes.length);
+		TCPLayer tcpLayer = (TCPLayer)this.GetUnderLayer(0);
+		tcpLayer.chatSend(bytes, bytes.length);
 		return true;
 	}
 

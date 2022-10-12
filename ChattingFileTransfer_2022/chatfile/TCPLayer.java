@@ -115,8 +115,9 @@ public class TCPLayer implements BaseLayer {
 		}
 	}
 
-	public boolean arpSend(byte[] dstAddr) {
-		this.GetUnderLayer(0).arpSend(dstAddr);
+	public boolean arpSend() {
+		IPLayer ipLayer = (IPLayer) this.GetUnderLayer(0);
+		ipLayer.arpSend();
 		return true;
 	}
 
