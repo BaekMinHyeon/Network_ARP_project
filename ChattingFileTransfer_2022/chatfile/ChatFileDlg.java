@@ -277,7 +277,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
       ;
 
       Setting_Button = new JButton("Setting");// setting
-      Setting_Button.setBounds(80, 270, 100, 20);
+      Setting_Button.setBounds(60, 270, 120, 20);
       Setting_Button.addActionListener(new setAddressListener());
       settingPanel.add(Setting_Button);// setting
 
@@ -299,7 +299,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
       public ArpDlg() {
          setTitle("Test ARP");
          setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-         setBounds(250, 250, 644, 425);
+         setBounds(250, 250, 644, 465);
          contentPane = new JPanel();
          ((JComponent) contentPane).setBorder(new EmptyBorder(5, 5, 5, 5));
          setContentPane(contentPane);
@@ -330,6 +330,10 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          myIpWrite.setBounds(2, 2, 159, 30);
          myIpInputPanel.add(myIpWrite);
          myIpWrite.setColumns(10);
+
+         lblmyip = new JLabel("IP Source");
+         lblmyip.setBounds(40, 380, 100, 30);
+         contentPane.add(lblmyip);
 
          JPanel arpCachePanel = new JPanel();
          arpCachePanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder"), "ARP Cache",
@@ -433,12 +437,12 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          gratuitousArpPanel.add(lblgratuitousarpip);
 
          ArpDlg_Exit_Button = new JButton("Exit");
-         ArpDlg_Exit_Button.setBounds(205, 340, 100, 30);
+         ArpDlg_Exit_Button.setBounds(500, 340, 100, 30);
          ArpDlg_Exit_Button.addActionListener(new setAddressListener());
          contentPane.add(ArpDlg_Exit_Button);
 
          ArpDlg_Cancel_Button = new JButton("Cancel");
-         ArpDlg_Cancel_Button.setBounds(315, 340, 100, 30);
+         ArpDlg_Cancel_Button.setBounds(500, 380, 100, 30);
          ArpDlg_Cancel_Button.addActionListener(new setAddressListener());
          contentPane.add(ArpDlg_Cancel_Button);
 
@@ -601,7 +605,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
 
             String[] byte_src_ip = srcIp.split("."); //Sting MAC 주소를"-"로 나눔
             for (int i = 0; i < 4; i++) {
-               srcIpAddress[4] = (byte) Integer.parseInt(byte_src_ip[i], 16); //16비트 (2byte)
+               srcIpAddress[i] = (byte) Integer.parseInt(byte_src_ip[i], 16); //16비트 (2byte)
             }
 
             ((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetEnetSrcAddress(srcEthernetAddress);
@@ -623,7 +627,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
 
             String[] byte_dst_ip = dstIp.split("."); //Sting MAC 주소를"-"로 나눔
             for (int i = 0; i < 4; i++) {
-               dstIpAddress[4] = (byte) Integer.parseInt(byte_dst_ip[i], 16); //16비트 (2byte)
+               dstIpAddress[i] = (byte) Integer.parseInt(byte_dst_ip[i], 16); //16비트 (2byte)
             }
 
             ((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetEnetDstAddress(dstEthernetAddress);
@@ -648,7 +652,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
 
             String[] byte_proxy_ip = proxyIp.split("."); //Sting MAC 주소를"-"로 나눔
             for (int i = 0; i < 4; i++) {
-               proxyIpAddress[4] = (byte) Integer.parseInt(byte_proxy_ip[i], 16); //16비트 (2byte)
+               proxyIpAddress[i] = (byte) Integer.parseInt(byte_proxy_ip[i], 16); //16비트 (2byte)
             }
 
             ((ARPLayer) m_LayerMgr.GetLayer("ARP")).ProxyTableSet(proxyEthernetAddress, proxyIpAddress);
