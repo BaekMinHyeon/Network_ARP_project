@@ -315,6 +315,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          myEthernetWrite.setBounds(2, 2, 159, 30);
          myEthernetInputPanel.add(myEthernetWrite);
          myEthernetWrite.setColumns(10);
+         myEthernetWrite.setText("00-0C-29-ED-A4-F4"); //죽여버려야 함
 
          lblmyethernet = new JLabel("Ethernet Source");
          lblmyethernet.setBounds(20, 340, 100, 30);
@@ -330,6 +331,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          myIpWrite.setBounds(2, 2, 159, 30);
          myIpInputPanel.add(myIpWrite);
          myIpWrite.setColumns(10);
+         myIpWrite.setText("169.254.115.57"); // 죽여야함
 
          lblmyip = new JLabel("IP Source");
          lblmyip.setBounds(40, 380, 100, 30);
@@ -362,6 +364,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          ArpCacheIpWrite.setBounds(2, 2, 159, 30);
          arpCacheIpInputPanel.add(ArpCacheIpWrite);
          ArpCacheIpWrite.setColumns(10);
+         ArpCacheIpWrite.setText("169.254.255.131"); // I will kill you
 
          Arp_Cache_Item_Delete_Button = new JButton("Item Delete");
          Arp_Cache_Item_Delete_Button.setBounds(20, 230, 120, 30);
@@ -560,7 +563,6 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
                ((EthernetLayer) m_LayerMgr.GetLayer("Ethernet")).SetEnetSrcAddress(srcAddress); //이부분을 통해 선택한 주소를 프로그램 상 소스주소로 사용가능
                ((EthernetLayer) m_LayerMgr.GetLayer("Ethernet")).SetEnetDstAddress(dstAddress); //이부분을 통해 선택한 주소를 프로그램 상 목적지주소로 사용가능
 
-               ((NILayer) m_LayerMgr.GetLayer("NI")).SetAdapterNumber(adapterNumber);
                jbt_open.setEnabled(true);
                Setting_Button.setText("Reset"); //setting 버튼 누르면 리셋으로 바뀜
                dstMacAddress.setEnabled(false);  //버튼을 비활성화시킴
@@ -602,14 +604,15 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
             for (int i = 0; i < 6; i++) {
                srcEthernetAddress[i] = (byte) Integer.parseInt(byte_src_ethernet[i], 16);//16비트 (2byte)
             }
-
-            String[] byte_src_ip = srcIp.split("."); //Sting MAC 주소를"-"로 나눔
+            String[] byte_src_ip = srcIp.split("\\."); //Sting MAC 주소를"-"로 나눔
             for (int i = 0; i < 4; i++) {
                srcIpAddress[i] = (byte) Integer.parseInt(byte_src_ip[i], 16); //16비트 (2byte)
             }
 
+            ((EthernetLayer) m_LayerMgr.GetLayer("Ethernet")).SetEnetSrcAddress(srcEthernetAddress);
             ((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetEnetSrcAddress(srcEthernetAddress);
             ((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetIpSrcAddress(srcIpAddress);
+            ((NILayer) m_LayerMgr.GetLayer("NI")).SetAdapterNumber(adapterNumber);
          }
 
          if (e.getSource() == Arp_Cache_Ip_Send_Button) {
@@ -625,7 +628,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
                dstEthernetAddress[i] = (byte) Integer.parseInt(byte_dst_ethernet[i], 16);//16비트 (2byte)
             }
 
-            String[] byte_dst_ip = dstIp.split("."); //Sting MAC 주소를"-"로 나눔
+            String[] byte_dst_ip = dstIp.split("\\."); //Sting MAC 주소를"-"로 나눔
             for (int i = 0; i < 4; i++) {
                dstIpAddress[i] = (byte) Integer.parseInt(byte_dst_ip[i], 16); //16비트 (2byte)
             }
@@ -650,7 +653,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
                proxyEthernetAddress[i] = (byte) Integer.parseInt(byte_proxy_ethernet[i], 16);//16비트 (2byte)
             }
 
-            String[] byte_proxy_ip = proxyIp.split("."); //Sting MAC 주소를"-"로 나눔
+            String[] byte_proxy_ip = proxyIp.split("\\."); //Sting MAC 주소를"-"로 나눔
             for (int i = 0; i < 4; i++) {
                proxyIpAddress[i] = (byte) Integer.parseInt(byte_proxy_ip[i], 16); //16비트 (2byte)
             }
@@ -702,6 +705,10 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          return false;
       }
       return false ;
+   }
+   
+   public void tablePrint(String s){
+	   ArpCacheTableArea.setText(s);
    }
    
    @Override
