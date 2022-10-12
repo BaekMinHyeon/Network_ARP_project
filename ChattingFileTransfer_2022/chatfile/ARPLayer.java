@@ -1,13 +1,12 @@
-package ChattingFileTransfer_2022.chatfile;
-
 import java.util.ArrayList;
+
 
 public class ARPLayer implements BaseLayer {
 
     public int nUpperLayerCount = 0;
     public int nUnderLayerCount = 0;
     public String pLayerName = null;
-    public ArrayList<BaseLayer> p_UnderLayer = new ArrayList<BaseLayer>();
+    public ArrayList<BaseLayer> p_aUnderLayer = new ArrayList<BaseLayer>();
     public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
     public ArrayList<_ARP_ARR> proxyTable = new ArrayList<_ARP_ARR>();
     public ArrayList<_ARP_ARR> arpTable = new ArrayList<_ARP_ARR>();
@@ -69,8 +68,8 @@ public class ARPLayer implements BaseLayer {
         m_sHeader.opcode = intToByte2(1);
 
         byte[] bytes = ObjToByte(m_sHeader);
-
-        this.GetUnderLayer(0).arpSend(bytes, bytes.length);
+        EthernetLayer ethernetLayer = (EthernetLayer) this.GetUnderLayer(0);
+        ethernetLayer.arpSend(bytes, bytes.length);
         return true;
     }
 
@@ -79,9 +78,9 @@ public class ARPLayer implements BaseLayer {
 
         byte[] bytes = ObjToByte(m_sHeader);
 
-        this.GetUpperLayer(0).
-                //""
-        this.GetUnderLayer(0).arpSend(bytes, bytes.length);
+
+        EthernetLayer ethernetLayer = (EthernetLayer) this.GetUnderLayer(0);
+        ethernetLayer.arpSend(bytes, bytes.length);
         return true;
     }
 
@@ -92,7 +91,8 @@ public class ARPLayer implements BaseLayer {
 
         byte[] bytes = ProxyObjToByte(m_sHeader, input, length);
 
-        this.GetUnderLayer(0).arpSend(bytes, bytes.length);
+        EthernetLayer ethernetLayer = (EthernetLayer) this.GetUnderLayer(0);
+        ethernetLayer.arpSend(bytes, bytes.length);
 
         return true;
     }
@@ -121,8 +121,10 @@ public class ARPLayer implements BaseLayer {
         for(_ARP_ARR addr : arpTable){
             if(addr.ip_target_addr.addr == m_sHeader.ip_target_addr.addr) {
                 addr.enet_target_addr.addr = m_sHeader.enet_target_addr.addr;
-                for(_ARP_ARR addr : arpTable) {
-                    GetUpperLayer(0).ArpCacheTableArea.setText(addr.ip_target_addr);
+                for(_ARP_ARR addr2 : arpTable) {
+                	ChatFileDlg chatfiledlg = (ChatFileDlg)GetUpperLayer(0);
+                    //chatfiledlg.ArpCacheTableArea.setText(addr2.ip_target_addr);
+                	System.out.println(addr2.ip_target_addr);
                 }
                 return true;
             }
@@ -261,7 +263,7 @@ public class ARPLayer implements BaseLayer {
         // TODO Auto-generated method stub
         if (nindex < 0 || nindex > nUnderLayerCount || nUnderLayerCount < 0)
             return null;
-        return p_UnderLayer.get(nindex);
+        return p_aUnderLayer.get(nindex);
     }
 
     @Override
@@ -275,9 +277,9 @@ public class ARPLayer implements BaseLayer {
     @Override
     public void SetUnderLayer(BaseLayer pUnderLayer) {
         // TODO Auto-generated method stub
-        if (p_UnderLayer == null)
+        if (p_aUnderLayer == null)
             return;
-        this.p_UnderLayer.add(nUpperLayerCount++, pUnderLayer);
+        this.p_aUnderLayer.add(nUnderLayerCount++, pUnderLayer);
     }
 
     @Override
