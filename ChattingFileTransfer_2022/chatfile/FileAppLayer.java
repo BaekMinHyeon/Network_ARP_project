@@ -153,7 +153,7 @@ public class FileAppLayer implements BaseLayer {
 
     public boolean Send(byte[] input, int length) { // 데이터 송신 함수
         byte[] bytes = this.ObjToByte(m_sHeader, input, length);
-        ((EthernetLayer)this.GetUnderLayer(0)).fileSend(bytes, bytes.length);
+        ((TCPLayer)this.GetUnderLayer(0)).fileSend(bytes, bytes.length);
         return true;
     }
 

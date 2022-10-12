@@ -10,10 +10,10 @@ import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
 
 public class NILayer implements BaseLayer {
-
+	public int nUnderLayerCount = 0;
 	public int nUpperLayerCount = 0;
 	public String pLayerName = null;
-	public BaseLayer p_UnderLayer = null;
+	public ArrayList<BaseLayer> p_aUnderLayer = new ArrayList<BaseLayer>();
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
 	int m_iNumAdapter;
 	public Pcap m_AdapterObject;
@@ -98,7 +98,7 @@ public class NILayer implements BaseLayer {
 		// TODO Auto-generated method stub
 		if (pUnderLayer == null)
 			return;
-		p_UnderLayer = pUnderLayer;
+		this.p_aUnderLayer.add(nUnderLayerCount++, pUnderLayer);
 	}
 
 	@Override
@@ -117,10 +117,10 @@ public class NILayer implements BaseLayer {
 	}
 
 	@Override
-	public BaseLayer GetUnderLayer() {
-		if (p_UnderLayer == null)
+	public BaseLayer GetUnderLayer(int nindex) {
+		if (nindex < 0 || nindex > nUnderLayerCount || nUnderLayerCount < 0)
 			return null;
-		return p_UnderLayer;
+		return p_aUnderLayer.get(nindex);
 	}
 
 	@Override

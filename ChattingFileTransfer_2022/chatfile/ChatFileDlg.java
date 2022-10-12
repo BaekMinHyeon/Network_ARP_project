@@ -646,7 +646,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
                proxyIpAddress[4] = (byte) Integer.parseInt(byte_proxy_ip[i], 16); //16비트 (2byte)
             }
 
-            ((ARPLayer) m_LayerMgr.getLayer("ARP")).ProxyTableSet(proxyEthernetAddress, proxyIpAddress);
+            ((ARPLayer) m_LayerMgr.GetLayer("ARP")).ProxyTableSet(proxyEthernetAddress, proxyIpAddress);
          }
 
          if (e.getSource() == Gratuitous_Arp_Ip_Send_Button) {
