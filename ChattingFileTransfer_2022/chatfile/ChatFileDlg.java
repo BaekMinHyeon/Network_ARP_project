@@ -286,6 +286,11 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
       Chat_send_Button.addActionListener(new setAddressListener());
       chattingPanel.add(Chat_send_Button);// chatting send button
 
+      Cache_Table_Button = new JButton("Cache Table");
+      Cache_Table_Button.setBounds(60, 290, 120, 20);
+      Cache_Table_Button.addActionListener(new setAddressListener());
+      settingPanel.add(Cache_Table_Button);
+
       setVisible(true);
 
    }
