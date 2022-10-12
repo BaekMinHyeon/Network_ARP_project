@@ -43,8 +43,11 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
    private JTextField ChattingWrite;
    private JTextField ArpCacheIpWrite;
    private JTextField GratuitousArpIpWrite;
+   private JTextField EntryDeviceWrite;
    private JTextField EntryIpWrite;
    private JTextField EntryEthernetWrite;
+   private JTextField myEthernetWrite;
+   private JTextField myIpWrite;
 
    Container contentPane;
 
@@ -60,6 +63,8 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
    JLabel lbldst;
    JLabel lblarpcacheip;
    JLabel lblgratuitousarpip;
+   JLabel lblmyethernet;
+   JLabel lblmyip;
 
    JButton Setting_Button; //Port번호(주소)를 입력받은 후 완료버튼설정
    JButton Chat_send_Button; //채팅화면의 채팅 입력 완료 후 data Send버튼
@@ -74,9 +79,9 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
    JButton ArpDlg_Cancel_Button;
    JButton ProxyArpEntry_Accept_Button;
    JButton ProxyArpEntry_Cancel_Button;
+   JButton My_Address_Button;
 
    static JComboBox<String> NICComboBox;
-   static JComboBox<String> DeviceComboBox;
 
    int adapterNumber = 0;
 
@@ -92,7 +97,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
       m_LayerMgr.AddLayer(new FileAppLayer("FileApp"));
 
       m_LayerMgr.AddLayer(new ChatFileDlg("GUI"));
-      m_LayerMgr.ConnectLayers(" NI ( *Ethernet ( *ARP ( +IP ) *IP ( *TCP ( *ChatApp ( +GUI ) *FileApp ( *GUI ) ) ) ) )");
+      m_LayerMgr.ConnectLayers(" NI ( *Ethernet ( *ARP ( +GUI ) *IP ( -ARP *TCP ( *ChatApp ( *GUI ) *FileApp ( *GUI ) ) ) ) )");
    }
 
    public ChatFileDlg(String pName) {
@@ -295,6 +300,32 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          setContentPane(contentPane);
          contentPane.setLayout(null);
 
+         JPanel myEthernetInputPanel = new JPanel();
+         myEthernetInputPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+         myEthernetInputPanel.setBounds(140, 340, 160, 30);
+         contentPane.add(myEthernetInputPanel);
+         myEthernetInputPanel.setLayout(null);
+
+         myEthernetWrite = new JTextField();
+         myEthernetWrite.setBounds(2, 2, 159, 30);
+         myEthernetInputPanel.add(myEthernetWrite);
+         myEthernetWrite.setColumns(10);
+
+         lblmyethernet = new JLabel("Ethernet Source");
+         lblmyethernet.setBounds(20, 340, 100, 30);
+         contentPane.add(lblmyethernet);
+
+         JPanel myIpInputPanel = new JPanel();
+         myIpInputPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+         myIpInputPanel.setBounds(140, 380, 160, 30);
+         contentPane.add(myIpInputPanel);
+         myIpInputPanel.setLayout(null);
+
+         myIpWrite = new JTextField();
+         myIpWrite.setBounds(2, 2, 159, 30);
+         myIpInputPanel.add(myIpWrite);
+         myIpWrite.setColumns(10);
+
          JPanel arpCachePanel = new JPanel();
          arpCachePanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder"), "ARP Cache",
                  TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
@@ -392,7 +423,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          Gratuitous_Arp_Ip_Send_Button.addActionListener(new setAddressListener());
          gratuitousArpPanel.add(Gratuitous_Arp_Ip_Send_Button);
 
-         lblgratuitousarpip = new JLabel("IP주소");
+         lblgratuitousarpip = new JLabel("H/W");
          lblgratuitousarpip.setBounds(10, 30, 70, 29);
          gratuitousArpPanel.add(lblgratuitousarpip);
 
@@ -405,6 +436,11 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          ArpDlg_Cancel_Button.setBounds(315, 340, 100, 30);
          ArpDlg_Cancel_Button.addActionListener(new setAddressListener());
          contentPane.add(ArpDlg_Cancel_Button);
+
+         My_Address_Button = new JButton("Setting");
+         My_Address_Button.setBounds(320, 360, 100, 30);
+         My_Address_Button.addActionListener(new setAddressListener());
+         contentPane.add(My_Address_Button);
 
          setVisible(true);
       }
@@ -424,9 +460,15 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          DeviceLabel.setBounds(61, 30, 50, 20);
          contentPane.add(DeviceLabel);
 
-         DeviceComboBox = new JComboBox();
-         DeviceComboBox.setBounds(120, 30, 120, 20);
-         contentPane.add(DeviceComboBox);
+         JPanel EntryDeviceEditorPanel = new JPanel();
+         EntryDeviceEditorPanel.setBounds(120, 30, 120, 20);
+         contentPane.add(EntryDeviceEditorPanel);
+         EntryDeviceEditorPanel.setLayout(null);
+
+         EntryDeviceWrite = new JTextField();
+         EntryDeviceWrite.setBounds(0, 0, 120, 20);
+         EntryDeviceEditorPanel.add(EntryDeviceWrite);
+         EntryDeviceWrite.setColumns(10);
 
          JLabel EntryIpLabel = new JLabel("IP 주소");
          EntryIpLabel.setBounds(60, 70, 50, 20);
@@ -513,7 +555,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
                jbt_open.setEnabled(true);
                Setting_Button.setText("Reset"); //setting 버튼 누르면 리셋으로 바뀜
                dstMacAddress.setEnabled(false);  //버튼을 비활성화시킴
-               srcMacAddress.setEnabled(false);  //버튼을 비활성화시킴  
+               srcMacAddress.setEnabled(false);  //버튼을 비활성화시킴
             } 
          }
 
@@ -538,6 +580,88 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
 
          if (e.getSource() == Proxy_Arp_Add_Button) {
             new ProxyArpEntry();
+         }
+
+         if (e.getSource() == My_Address_Button) {
+            byte[] srcEthernetAddress = new byte[6];
+            byte[] srcIpAddress = new byte[4];
+
+            String srcEthernet = myEthernetWrite.getText();
+            String srcIp = myIpWrite.getText();
+
+            String[] byte_src_ethernet = srcEthernet.split("-");//Sting MAC 주소를"-"로 나눔
+            for (int i = 0; i < 6; i++) {
+               srcEthernetAddress[i] = (byte) Integer.parseInt(byte_src_ethernet[i], 16);//16비트 (2byte)
+            }
+
+            String[] byte_src_ip = srcIp.split("."); //Sting MAC 주소를"-"로 나눔
+            for (int i = 0; i < 4; i++) {
+               srcIpAddress[4] = (byte) Integer.parseInt(byte_src_ip[i], 16); //16비트 (2byte)
+            }
+
+            ((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetEnetSrcAddress(srcEthernetAddress);
+            ((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetIpSrcAddress(srcIpAddress);
+         }
+
+         if (e.getSource() == Arp_Cache_Ip_Send_Button) {
+            ArpCacheTableArea.setText(ArpCacheIpWrite.getText() + "\t" + "??-??-??-??-??-??" + "\t" + "incomplete\n");
+            byte[] dstEthernetAddress = new byte[6];
+            byte[] dstIpAddress = new byte[4];
+
+            String dstEthernet = "00-00-00-00-00-00";
+            String dstIp = ArpCacheIpWrite.getText();
+
+            String[] byte_dst_ethernet = dstEthernet.split("-");//Sting MAC 주소를"-"로 나눔
+            for (int i = 0; i < 6; i++) {
+               dstEthernetAddress[i] = (byte) Integer.parseInt(byte_dst_ethernet[i], 16);//16비트 (2byte)
+            }
+
+            String[] byte_dst_ip = dstIp.split("."); //Sting MAC 주소를"-"로 나눔
+            for (int i = 0; i < 4; i++) {
+               dstIpAddress[4] = (byte) Integer.parseInt(byte_dst_ip[i], 16); //16비트 (2byte)
+            }
+
+            ((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetEnetDstAddress(dstEthernetAddress);
+            ((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetIpDstAddress(dstIpAddress);
+            ((TCPLayer) m_LayerMgr.GetLayer("TCP")).arpSend();
+         }
+
+         if (e.getSource() == ProxyArpEntry_Accept_Button) {
+            byte[] proxyEthernetAddress = new byte[6];
+            byte[] proxyIpAddress = new byte[4];
+
+            String proxyDevice = EntryDeviceWrite.getText();
+            String proxyEthernet = EntryEthernetWrite.getText();
+            String proxyIp = EntryIpWrite.getText();
+
+            ProxyArpEntryArea.setText(proxyDevice + "\t" + proxyEthernet + "\t" + proxyIp);
+
+            String[] byte_proxy_ethernet = proxyEthernet.split("-");//Sting MAC 주소를"-"로 나눔
+            for (int i = 0; i < 6; i++) {
+               proxyEthernetAddress[i] = (byte) Integer.parseInt(byte_proxy_ethernet[i], 16);//16비트 (2byte)
+            }
+
+            String[] byte_proxy_ip = proxyIp.split("."); //Sting MAC 주소를"-"로 나눔
+            for (int i = 0; i < 4; i++) {
+               proxyIpAddress[4] = (byte) Integer.parseInt(byte_proxy_ip[i], 16); //16비트 (2byte)
+            }
+
+            ((ARPLayer) m_LayerMgr.getLayer("ARP")).ProxyTableSet(proxyEthernetAddress, proxyIpAddress);
+         }
+
+         if (e.getSource() == Gratuitous_Arp_Ip_Send_Button) {
+            byte[] gratuitousEthernetAddress = new byte[6];
+
+            String gratuitousEthernet = GratuitousArpIpWrite.getText();
+
+            myEthernetWrite.setText(gratuitousEthernet);
+
+            String[] byte_gratuitous_ethernet = gratuitousEthernet.split("-");
+            for (int i = 0; i < 6; i++) {
+               gratuitousEthernetAddress[i] = (byte) Integer.parseInt(byte_gratuitous_ethernet[i], 16);
+            }
+
+            ((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetEnetSrcAddress(gratuitousEthernetAddress);
          }
       }
    }
@@ -594,11 +718,11 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
       return pLayerName;
    }
    
-   public BaseLayer GetUnderLayer(int i) {
+   public BaseLayer GetUnderLayer(int nindex) {
       // TODO Auto-generated method stub
-      if (p_aUnderLayer == null)
+      if (nindex < 0 || nindex > nUnderLayerCount || nUnderLayerCount < 0)
          return null;
-      return p_aUnderLayer.get(i);
+      return p_aUnderLayer.get(nindex);
    }
 
    @Override
@@ -614,11 +738,5 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
       this.SetUpperLayer(pUULayer);
       pUULayer.SetUnderLayer(this);
 
-   }
-
-   @Override
-   public BaseLayer GetUnderLayer() {
-      // TODO Auto-generated method stub
-      return null;
    }
 }
