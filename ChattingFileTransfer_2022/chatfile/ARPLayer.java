@@ -142,7 +142,14 @@ public class ARPLayer implements BaseLayer {
         		if(j % 2 == 1 && j != address.length()-1)
         			real_address += "-";
         	}
-            s += new java.math.BigInteger(arpTable.get(i).ip_target_addr.addr).toString(16) + "   "  + real_address + "   complete\n";
+        	String ip = "";
+        	for(int j = 0; j < 4; j++){
+        		int num_ip = (int) (arpTable.get(i).ip_target_addr.addr[j] & 0xff);
+        		ip += String.valueOf(num_ip);
+        		if(j != 3)
+        			ip += ".";
+        	}
+            s +=  ip + "   "  + real_address + "   complete\n";
         }
         chatfiledlg.tablePrint(s);
         return true;
