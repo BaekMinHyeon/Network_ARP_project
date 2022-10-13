@@ -1,3 +1,5 @@
+package ChattingFileTransfer_2022.chatfile;
+
 import java.util.ArrayList;
 
 
@@ -8,7 +10,7 @@ public class ARPLayer implements BaseLayer {
     public String pLayerName = null;
     public ArrayList<BaseLayer> p_aUnderLayer = new ArrayList<BaseLayer>();
     public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
-    public ArrayList<_ARP_ARR> proxyTable = new ArrayList<_ARP_ARR>();
+    public ArrayList<_PROXY_ARP_ARR> proxyTable = new ArrayList<_PROXY_ARP_ARR>();
     public ArrayList<_ARP_ARR> arpTable = new ArrayList<_ARP_ARR>();
     _ARP_Frame m_sHeader;
 
@@ -118,80 +120,38 @@ public class ARPLayer implements BaseLayer {
     }
 
     public boolean ArpTableSet() {
-    	ChatFileDlg chatfiledlg = (ChatFileDlg)this.GetUpperLayer(0);
         for(_ARP_ARR addr : arpTable){
-            if(addr.ip_target_addr.addr[0] == m_sHeader.ip_target_addr.addr[0]
-            		&& addr.ip_target_addr.addr[1] == m_sHeader.ip_target_addr.addr[1]
-            				&& addr.ip_target_addr.addr[2] == m_sHeader.ip_target_addr.addr[2]
-            						&&addr.ip_target_addr.addr[3] == m_sHeader.ip_target_addr.addr[3]) {
+            if(chkIpAddr(addr.ip_target_addr.addr, m_sHeader.ip_target_addr.addr)) {
                 addr.enet_target_addr.addr = m_sHeader.enet_target_addr.addr;
-                String s = "";
-                for (int i = 0; i < arpTable.size(); i++){
-                	String address = new java.math.BigInteger(arpTable.get(i).enet_target_addr.addr).toString(16);
-                	String real_address = "";
-                	while(address.length() != 12){
-                		address = "0" + address;
-                	}
-                	for(int j = 0; j < address.length(); j++){
-                		real_address += address.charAt(j);
-                		if(j % 2 == 1 && j != address.length()-1)
-                			real_address += "-";
-                	}
-                	String ip = "";
-                	for(int j = 0; j < 4; j++){
-                		int num_ip = (int) (arpTable.get(i).ip_target_addr.addr[j] & 0xff);
-                		ip += String.valueOf(num_ip);
-                		if(j != 3)
-                			ip += ".";
-                	}
-                    s +=  ip + "   "  + real_address + "   complete\n";
-                }
-                chatfiledlg.tablePrint(s);
+                printArp();
                 return true;
             }
         }
         arpTable.add(new _ARP_ARR(m_sHeader.enet_target_addr.addr, m_sHeader.ip_target_addr.addr));
-        String s = "";
-        for (int i = 0; i < arpTable.size(); i++){
-        	String address = new java.math.BigInteger(arpTable.get(i).enet_target_addr.addr).toString(16);
-        	String real_address = "";
-        	while(address.length() != 12){
-        		address = "0" + address;
-        	}
-        	for(int j = 0; j < address.length(); j++){
-        		real_address += address.charAt(j);
-        		if(j % 2 == 1 && j != address.length()-1)
-        			real_address += "-";
-        	}
-        	String ip = "";
-        	for(int j = 0; j < 4; j++){
-        		int num_ip = (int) (arpTable.get(i).ip_target_addr.addr[j] & 0xff);
-        		ip += String.valueOf(num_ip);
-        		if(j != 3)
-        			ip += ".";
-        	}
-            s +=  ip + "   "  + real_address + "   complete\n";
-        }
-        chatfiledlg.tablePrint(s);
+        printArp();
         return true;
     }
 
-    public boolean ArpTableDelete(byte[] enthernet_addr, byte[] ip_addr) {
+    public boolean ArpTableDelete(byte[] ip_addr) {
         for(int i = 0; i < arpTable.size(); i++){
-            if (arpTable.get(i).enet_target_addr.equals(enthernet_addr) &&
-                    arpTable.get(i).ip_target_addr.equals(ip_addr)) {
+            if (chkIpAddr(arpTable.get(i).enet_target_addr.addr, ip_addr)) {
                 arpTable.remove(i);
+                printArp();
                 return true;
             }
         }
         return false;
     }
 
+    public boolean ArpTableAllDelete(){
+        arpTable.clear();
+        printArp();
+        return true;
+    }
 
-    public boolean ProxyTableDelete(byte[] enthernet_addr, byte[] ip_addr) {
+    public boolean ProxyTableDelete(byte[] ip_addr) {
         for(int i = 0; i < proxyTable.size(); i++){
-            if (proxyTable.get(i).enet_target_addr.equals(enthernet_addr) &&
-              proxyTable.get(i).ip_target_addr.equals(ip_addr)) {
+            if (chkIpAddr(arpTable.get(i).enet_target_addr.addr, ip_addr)) {
                 proxyTable.remove(i);
                 return true;
             }
@@ -199,8 +159,8 @@ public class ARPLayer implements BaseLayer {
         return false;
     }
 
-    public boolean ProxyTableSet(byte[] enthernet_addr, byte[] ip_addr) {
-        proxyTable.add(new _ARP_ARR(enthernet_addr, ip_addr));
+    public boolean ProxyTableSet(String name, byte[] enthernet_addr, byte[] ip_addr) {
+        proxyTable.add(new _PROXY_ARP_ARR(name, enthernet_addr, ip_addr));
         return true;
     }
 
@@ -218,7 +178,7 @@ public class ARPLayer implements BaseLayer {
             }
             else{
                 //프록시 테이블 확인
-                for (_ARP_ARR addr : proxyTable){
+                for (_PROXY_ARP_ARR addr : proxyTable){
                     if (chkProxyAddr(addr.ip_target_addr.addr, input)) {
                         this.ProxySend(input, input.length);
                     }
@@ -272,6 +232,65 @@ public class ARPLayer implements BaseLayer {
             if(addr[i] != input[24 + i])
                 return false;
         return true;
+    }
+
+    public boolean chkIpAddr(byte[] addr, byte[] input){
+        for(int i = 0; i < 4; i++){
+            if (addr[i] != input[i]) return false;
+        }
+        return true;
+    }
+
+    public boolean printArp() {
+        ChatFileDlg chatfiledlg = (ChatFileDlg) this.GetUpperLayer(0);
+        String s = "";
+        for (int i = 0; i < arpTable.size(); i++) {
+            String address = new java.math.BigInteger(arpTable.get(i).enet_target_addr.addr).toString(16);
+            String real_address = "";
+            while (address.length() != 12) {
+                address = "0" + address;
+            }
+            for (int j = 0; j < address.length(); j++) {
+                real_address += address.charAt(j);
+                if (j % 2 == 1 && j != address.length() - 1)
+                    real_address += "-";
+            }
+            String ip = "";
+            for (int j = 0; j < 4; j++) {
+                int num_ip = (int) (arpTable.get(i).ip_target_addr.addr[j] & 0xff);
+                ip += String.valueOf(num_ip);
+                if (j != 3)
+                    ip += ".";
+            }
+            s += ip + "   " + real_address + "   complete\n";
+        }
+        chatfiledlg.tablePrint(s);
+    }
+
+    public boolean printArp(){
+        ChatFileDlg chatfiledlg = (ChatFileDlg)this.GetUpperLayer(0);
+        String s = "";
+        for (int i = 0; i < proxyTable.size(); i++){
+            String address = new java.math.BigInteger(proxyTable.get(i).enet_target_addr.addr).toString(16);
+            String real_address = "";
+            while(address.length() != 12){
+                address = "0" + address;
+            }
+            for(int j = 0; j < address.length(); j++){
+                real_address += address.charAt(j);
+                if(j % 2 == 1 && j != address.length()-1)
+                    real_address += "-";
+            }
+            String ip = "";
+            for(int j = 0; j < 4; j++){
+                int num_ip = (int) (proxyTable.get(i).ip_target_addr.addr[j] & 0xff);
+                ip += String.valueOf(num_ip);
+                if(j != 3)
+                    ip += ".";
+            }
+            s +=  proxyTable.get(i).name + "   " + ip + "   "  + real_address + "\n";
+        }
+        chatfiledlg.tablePrint(s);
     }
 
     public void SetEnetSrcAddress(byte[] srcAddress) {
@@ -410,6 +429,19 @@ public class ARPLayer implements BaseLayer {
         _ARP_IP_ADDR ip_target_addr;
 
         public _ARP_ARR(byte[] enthernet_addr, byte[] ip_addr) {
+            enet_target_addr = new _ARP_ENTHERNET_ADDR(enthernet_addr);
+            ip_target_addr = new _ARP_IP_ADDR(ip_addr);
+        }
+    }
+
+    public class _PROXY_ARP_ARR {
+
+        String name;
+        _ARP_ENTHERNET_ADDR enet_target_addr;
+        _ARP_IP_ADDR ip_target_addr;
+
+        public _PROXY_ARP_ARR(String name, byte[] enthernet_addr, byte[] ip_addr) {
+            this.name = name;
             enet_target_addr = new _ARP_ENTHERNET_ADDR(enthernet_addr);
             ip_target_addr = new _ARP_IP_ADDR(ip_addr);
         }
