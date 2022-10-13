@@ -1,4 +1,3 @@
-package ChattingFileTransfer_2022.chatfile;
 
 import java.util.ArrayList;
 
@@ -66,10 +65,32 @@ public class ARPLayer implements BaseLayer {
         return input;
     }
 
+    public void autoChkArp(byte[] ip_addr){
+        for(_ARP_ARR addr : arpTable){
+            if(addr.ip_target_addr.addr[0] == ip_addr[0]
+                    &&addr.ip_target_addr.addr[1] == ip_addr[1]
+                    &&addr.ip_target_addr.addr[2] == ip_addr[2]
+                    &&addr.ip_target_addr.addr[3] == ip_addr[3]) {
+                EthernetLayer ethernetLayer = (EthernetLayer)this.GetUnderLayer(0);
+                ethernetLayer.SetEnetDstAddress(addr.enet_target_addr.addr);
+                return;
+            }
+        }
+        m_sHeader.ip_target_addr.addr = ip_addr;
+        m_sHeader.enet_target_addr.addr[0] = 0x00;
+        m_sHeader.enet_target_addr.addr[1] = 0x00;
+        m_sHeader.enet_target_addr.addr[2] = 0x00;
+        m_sHeader.enet_target_addr.addr[3] = 0x00;
+        m_sHeader.enet_target_addr.addr[4] = 0x00;
+        m_sHeader.enet_target_addr.addr[5] = 0x00;
+        Send();
+    }
+
     public boolean Send() {
         m_sHeader.opcode = intToByte2(1);
 
         byte[] bytes = ObjToByte(m_sHeader);
+
         EthernetLayer ethernetLayer = (EthernetLayer) this.GetUnderLayer(0);
         ethernetLayer.arpSend(bytes, bytes.length);
         return true;
@@ -79,7 +100,6 @@ public class ARPLayer implements BaseLayer {
         m_sHeader.opcode = intToByte2(2);
 
         byte[] bytes = ObjToByte(m_sHeader);
-
 
         EthernetLayer ethernetLayer = (EthernetLayer) this.GetUnderLayer(0);
         ethernetLayer.arpSend(bytes, bytes.length);
@@ -121,7 +141,10 @@ public class ARPLayer implements BaseLayer {
 
     public boolean ArpTableSet() {
         for(_ARP_ARR addr : arpTable){
-            if(chkIpAddr(addr.ip_target_addr.addr, m_sHeader.ip_target_addr.addr)) {
+            if(addr.ip_target_addr.addr[0] ==  m_sHeader.ip_target_addr.addr[0]
+                    && addr.ip_target_addr.addr[1] ==  m_sHeader.ip_target_addr.addr[1]
+                    && addr.ip_target_addr.addr[2] ==  m_sHeader.ip_target_addr.addr[2]
+                    && addr.ip_target_addr.addr[3] ==  m_sHeader.ip_target_addr.addr[3]) {
                 addr.enet_target_addr.addr = m_sHeader.enet_target_addr.addr;
                 printArp();
                 return true;
@@ -134,7 +157,10 @@ public class ARPLayer implements BaseLayer {
 
     public boolean ArpTableDelete(byte[] ip_addr) {
         for(int i = 0; i < arpTable.size(); i++){
-            if (chkIpAddr(arpTable.get(i).enet_target_addr.addr, ip_addr)) {
+            if (arpTable.get(i).ip_target_addr.addr[0] ==  m_sHeader.ip_target_addr.addr[0]
+                    && arpTable.get(i).ip_target_addr.addr[1] ==  m_sHeader.ip_target_addr.addr[1]
+                    && arpTable.get(i).ip_target_addr.addr[2] ==  m_sHeader.ip_target_addr.addr[2]
+                    && arpTable.get(i).ip_target_addr.addr[3] ==  m_sHeader.ip_target_addr.addr[3]) {
                 arpTable.remove(i);
                 printArp();
                 return true;
@@ -151,7 +177,11 @@ public class ARPLayer implements BaseLayer {
 
     public boolean ProxyTableDelete(byte[] ip_addr) {
         for(int i = 0; i < proxyTable.size(); i++){
-            if (chkIpAddr(arpTable.get(i).enet_target_addr.addr, ip_addr)) {
+            if (proxyTable.get(i).ip_target_addr.addr[0] ==  ip_addr[0]
+                    && proxyTable.get(i).ip_target_addr.addr[1] ==  ip_addr[1]
+                    && proxyTable.get(i).ip_target_addr.addr[2] ==  ip_addr[2]
+                    && proxyTable.get(i).ip_target_addr.addr[3] ==  ip_addr[3]) {
+                printProxyArp();
                 proxyTable.remove(i);
                 return true;
             }
@@ -161,6 +191,7 @@ public class ARPLayer implements BaseLayer {
 
     public boolean ProxyTableSet(String name, byte[] enthernet_addr, byte[] ip_addr) {
         proxyTable.add(new _PROXY_ARP_ARR(name, enthernet_addr, ip_addr));
+        printProxyArp();
         return true;
     }
 
@@ -188,7 +219,13 @@ public class ARPLayer implements BaseLayer {
         else if (temp_type == 2) {
             DestinationSet(input);
             ArpTableSet();
-            //테이블 출력
+            for(_ARP_ARR addr : arpTable){
+                if(chkIpAddr(addr.ip_target_addr.addr, m_sHeader.ip_target_addr.addr)) {
+                    EthernetLayer ethernetLayer = (EthernetLayer)this.GetUnderLayer(0);
+                    ethernetLayer.SetEnetDstAddress(m_sHeader.enet_target_addr.addr);
+                    System.out.println("맥 주소 수신 완료");
+                }
+            }
             return true;
         }
         return false;
@@ -241,7 +278,7 @@ public class ARPLayer implements BaseLayer {
         return true;
     }
 
-    public boolean printArp() {
+    public void printArp() {
         ChatFileDlg chatfiledlg = (ChatFileDlg) this.GetUpperLayer(0);
         String s = "";
         for (int i = 0; i < arpTable.size(); i++) {
@@ -267,7 +304,7 @@ public class ARPLayer implements BaseLayer {
         chatfiledlg.tablePrint(s);
     }
 
-    public boolean printArp(){
+    public void printProxyArp(){
         ChatFileDlg chatfiledlg = (ChatFileDlg)this.GetUpperLayer(0);
         String s = "";
         for (int i = 0; i < proxyTable.size(); i++){
@@ -290,7 +327,7 @@ public class ARPLayer implements BaseLayer {
             }
             s +=  proxyTable.get(i).name + "   " + ip + "   "  + real_address + "\n";
         }
-        chatfiledlg.tablePrint(s);
+        chatfiledlg.proxyTablePrint(s);
     }
 
     public void SetEnetSrcAddress(byte[] srcAddress) {
