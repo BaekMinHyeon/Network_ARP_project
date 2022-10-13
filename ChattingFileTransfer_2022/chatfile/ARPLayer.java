@@ -120,12 +120,33 @@ public class ARPLayer implements BaseLayer {
     public boolean ArpTableSet() {
     	ChatFileDlg chatfiledlg = (ChatFileDlg)this.GetUpperLayer(0);
         for(_ARP_ARR addr : arpTable){
-            if(addr.ip_target_addr.addr == m_sHeader.ip_target_addr.addr) {
+            if(addr.ip_target_addr.addr[0] == m_sHeader.ip_target_addr.addr[0]
+            		&& addr.ip_target_addr.addr[1] == m_sHeader.ip_target_addr.addr[1]
+            				&& addr.ip_target_addr.addr[2] == m_sHeader.ip_target_addr.addr[2]
+            						&&addr.ip_target_addr.addr[3] == m_sHeader.ip_target_addr.addr[3]) {
                 addr.enet_target_addr.addr = m_sHeader.enet_target_addr.addr;
                 String s = "";
                 for (int i = 0; i < arpTable.size(); i++){
-                	s += new java.math.BigInteger(arpTable.get(i).ip_target_addr.addr).toString(16) + "   "  + new java.math.BigInteger(arpTable.get(i).enet_target_addr.addr).toString(16) + "   complete\n";
+                	String address = new java.math.BigInteger(arpTable.get(i).enet_target_addr.addr).toString(16);
+                	String real_address = "";
+                	while(address.length() != 12){
+                		address = "0" + address;
+                	}
+                	for(int j = 0; j < address.length(); j++){
+                		real_address += address.charAt(j);
+                		if(j % 2 == 1 && j != address.length()-1)
+                			real_address += "-";
+                	}
+                	String ip = "";
+                	for(int j = 0; j < 4; j++){
+                		int num_ip = (int) (arpTable.get(i).ip_target_addr.addr[j] & 0xff);
+                		ip += String.valueOf(num_ip);
+                		if(j != 3)
+                			ip += ".";
+                	}
+                    s +=  ip + "   "  + real_address + "   complete\n";
                 }
+                chatfiledlg.tablePrint(s);
                 return true;
             }
         }

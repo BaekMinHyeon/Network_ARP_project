@@ -662,19 +662,29 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          }
 
          if (e.getSource() == Gratuitous_Arp_Ip_Send_Button) {
-            byte[] gratuitousEthernetAddress = new byte[6];
+             byte[] gratuitousEthernetAddress = new byte[6];
 
-            String gratuitousEthernet = GratuitousArpIpWrite.getText();
+             String gratuitousEthernet = GratuitousArpIpWrite.getText();
 
-            myEthernetWrite.setText(gratuitousEthernet);
+             myEthernetWrite.setText(gratuitousEthernet);
 
-            String[] byte_gratuitous_ethernet = gratuitousEthernet.split("-");
-            for (int i = 0; i < 6; i++) {
-               gratuitousEthernetAddress[i] = (byte) Integer.parseInt(byte_gratuitous_ethernet[i], 16);
-            }
+             String[] byte_gratuitous_ethernet = gratuitousEthernet.split("-");
+             for (int i = 0; i < 6; i++) {
+                gratuitousEthernetAddress[i] = (byte) Integer.parseInt(byte_gratuitous_ethernet[i], 16);
+             }
+             
+             byte[] dstIpAddress = new byte[4];
+             String dstIp = ArpCacheIpWrite.getText();
+             String[] byte_dst_ip = dstIp.split("\\."); //Sting MAC 주소를"-"로 나눔
+             for (int i = 0; i < 4; i++) {
+                dstIpAddress[i] =  (byte) (Integer.parseInt(byte_dst_ip[i])); //16비트 (2byte)
+             }
 
-            ((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetEnetSrcAddress(gratuitousEthernetAddress);
-         }
+             ((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetEnetSrcAddress(gratuitousEthernetAddress);
+             ((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetEnetDstAddress(gratuitousEthernetAddress);
+             ((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetIpDstAddress(dstIpAddress);
+             ((TCPLayer) m_LayerMgr.GetLayer("TCP")).arpSend();
+          }
       }
    }
    public File getFile() {
