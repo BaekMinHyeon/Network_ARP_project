@@ -13,7 +13,7 @@ public class IPLayer implements BaseLayer {
     private int offset = 185;
     private int receivedLength = 0;
     private ArrayList<byte[]> FragmentCollect = new ArrayList();
-    private ArrayList<byte[]> SortFragment = new ArrayList();
+    private byte[] SortFragment;
     
     //----------생성자-------------
     public IPLayer(String pName){
@@ -61,21 +61,46 @@ public class IPLayer implements BaseLayer {
     	}
     }
     
+    private boolean fragSend(byte[] input, int length){
+    	int num = length / Max_Data; // 단편화 개수
+    	byte[] array = new byte[Max_Data];
+    	int len = Max_Data;
+    	if(length % Max_Data != 0){ // 나머지 존재
+    		num++;
+    	}
+    	for(int i = 0; i < num; i++){
+    		if(i != num-1)
+    			setHeader(Max_Data, 0, 1, i * offset);
+    		else{
+    			if(length % Max_Data != 0){
+    				len = length % Max_Data;
+    				setHeader(len, 0, 0, i * offset);
+    				array = new byte[len];
+    			}
+    			else
+    				setHeader(Max_Data, 0, 0, i * offset);
+    		}
+    		System.arraycopy(input, i*Max_Data, array, 0, array.length);
+    		byte[] data = ObjToByte(m_sHeader, array, array.length); // header 추가
+    		EthernetLayer ethernetLayer = (EthernetLayer)this.GetUnderLayer(0); 
+	    	ethernetLayer.Send(data, data.length);
+    	}
+    	return true;
+    }
+    
     public boolean Send(byte[] input, int length){
-    	int fragment = input[13] & 0xff; // TCP의 flag를 확인
-    	int sequence = byte4ToInt(input[4], input[5], input[6], input[7]); // TCP의 seq을 확인
-    	if(fragment == 0){ // 단편화 없음
-    		setHeader(length, 0, 0, sequence * offset);
-    	}
-    	else{ // 단편화
-    		if(fragment == 1) // 처음~마지막 전 데이터
-    			setHeader(length, 1, 1, sequence * offset);
-    		else // fragment == 2 마지막 데이터
-    			setHeader(length, 1, 1, sequence * offset);
-    	}
-    	byte[] data = ObjToByte(m_sHeader, input, length); // header 추가
-    	EthernetLayer ethernetLayer = (EthernetLayer)this.GetUnderLayer(0); 
-    	ethernetLayer.Send(data, data.length);
+		/*
+	       * 이더넷 최대길이 1500byte, 최대 데이터 길이 = 1500 - ip헤더
+	    */
+    	SortFragment = new byte[length];
+		if (length > Max_Data) { // 단편화 필요
+			fragSend(input, length);
+		} else { // 단편화 없음
+			setHeader(length, 1, 0, 0 * offset);
+			byte[] data = ObjToByte(m_sHeader, input, length); // header 추가
+	    	EthernetLayer ethernetLayer = (EthernetLayer)this.GetUnderLayer(0); 
+	    	ethernetLayer.Send(data, data.length);
+		}
     	return true;
     }
     
@@ -87,7 +112,7 @@ public class IPLayer implements BaseLayer {
     
     private void setHeader(int length, int frag, int more, int fragoff){
     	this.m_sHeader.ip_len = intToByte2(length); // tcp에서 전송되는 데이터 최대 1480이라서 2바이트 변환이면 충분
-    	// frag: 0(단편화 없음), 1(단편화 됨)  more: 0(마지막 데이터), 1(아직 데이터 남음)
+    	// frag: 0(단편화 있음), 1(단편화 없음)  more: 0(마지막 데이터), 1(아직 데이터 남음)
     	// ip_fragoff 16비트 중 맨 앞은 0 1비트 frag 1비트  more 13비트 fragoff
     	this.m_sHeader.ip_fragoff[0] = (byte)(((frag & 0x1) << 6) | ((more & 0x1) << 5) | ((fragoff & 0x1f00) >> 8));
     	this.m_sHeader.ip_fragoff[1] = (byte)(fragoff & 0xff);  	
@@ -102,28 +127,22 @@ public class IPLayer implements BaseLayer {
     	int more = GetMore(input[6]);
     	int fragoff = GetFragoff(input[6], input[7]);
     	byte[] data;
-    	if(frag == 0){ // 단편화 없음
+    	if(frag == 1){ // 단편화 없음
     		data = RemoveHeader(input, input.length);
     		TCPLayer tcpLayer = (TCPLayer)this.GetUpperLayer(0);
     		tcpLayer.Receive(data);
     	}
     	else{ // 단편화
     		FragmentCollect.add(input);
-    		receivedLength += (input.length - Header_Size);
     		
     		if(more == 0) { // // 마지막 데이터
     			int last = fragoff / offset; // sequence
-    			data = new byte[receivedLength];
     			int sumlength = 0;
     			if(sortList(last) == false)
     				return false;
-    			for(int count = 0; count <= last; count++){
-    				byte[] fragdata = RemoveHeader(SortFragment.get(count), SortFragment.get(count).length);
-    				System.arraycopy(fragdata, 0, data, sumlength, fragdata.length);
-    				sumlength += fragdata.length;
-    			}
+    			
     			TCPLayer tcpLayer = (TCPLayer)this.GetUpperLayer(0);
-    			tcpLayer.Receive(data);
+    			tcpLayer.Receive(SortFragment);
     		}
     		
     	}
@@ -133,12 +152,12 @@ public class IPLayer implements BaseLayer {
     private boolean sortList(int last){
     	if(FragmentCollect.size() - 1 != last)
     		return false;
-    	SortFragment = new ArrayList();
     	for(int count = 0; count <= last; count++){
     		byte[] fragdata = FragmentCollect.remove(0);
     		int fragoff = GetFragoff(fragdata[6], fragdata[7]);
     		int sequence = fragoff / offset;
-    		SortFragment.add(sequence, fragdata);
+    		fragdata = RemoveHeader(fragdata, fragdata.length);
+    		System.arraycopy(fragdata, 0, SortFragment, sequence * Max_Data, fragdata.length);
     	}
     	return true;
     }
