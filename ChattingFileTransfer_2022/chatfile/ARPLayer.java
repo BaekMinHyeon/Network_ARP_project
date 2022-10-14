@@ -73,6 +73,19 @@ public class ARPLayer implements BaseLayer {
                     &&addr.ip_target_addr.addr[3] == ip_addr[3]) {
                 EthernetLayer ethernetLayer = (EthernetLayer)this.GetUnderLayer(0);
                 ethernetLayer.SetEnetDstAddress(addr.enet_target_addr.addr);
+                String address = new java.math.BigInteger(addr.enet_target_addr.addr).toString(16);
+                String real_address = "";
+                while (address.length() != 12) {
+                    address = "0" + address;
+                }
+                for (int j = 0; j < address.length(); j++) {
+                    real_address += address.charAt(j);
+                    if (j % 2 == 1 && j != address.length() - 1)
+                        real_address += "-";
+                }
+
+                ChatFileDlg chatFileDlg = (ChatFileDlg)this.GetUpperLayer(0);
+                chatFileDlg.setDstMacAddress(real_address);
                 return;
             }
         }
