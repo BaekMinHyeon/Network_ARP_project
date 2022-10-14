@@ -223,7 +223,20 @@ public class ARPLayer implements BaseLayer {
                 if(chkIpAddr(addr.ip_target_addr.addr, m_sHeader.ip_target_addr.addr)) {
                     EthernetLayer ethernetLayer = (EthernetLayer)this.GetUnderLayer(0);
                     ethernetLayer.SetEnetDstAddress(m_sHeader.enet_target_addr.addr);
-                    System.out.println("맥 주소 수신 완료");
+
+                    String address = new java.math.BigInteger(m_sHeader.enet_target_addr.addr).toString(16);
+                    String real_address = "";
+                    while (address.length() != 12) {
+                        address = "0" + address;
+                    }
+                    for (int j = 0; j < address.length(); j++) {
+                        real_address += address.charAt(j);
+                        if (j % 2 == 1 && j != address.length() - 1)
+                            real_address += "-";
+                    }
+
+                    ChatFileDlg chatFileDlg = (ChatFileDlg)this.GetUpperLayer(0);
+                    chatFileDlg.setDstMacAddress(real_address);
                 }
             }
             return true;
