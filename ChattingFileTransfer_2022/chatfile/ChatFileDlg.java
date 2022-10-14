@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
@@ -824,11 +825,10 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
 
             myEthernetWrite.setEnabled(false);
             myIpWrite.setEnabled(false);
-            My_Address_Button.setEnabled(false);
          }
 
          if (e.getSource() == Arp_Cache_Ip_Send_Button) {
-            ArpCacheTableArea.setText(ArpCacheIpWrite.getText() + "\t" + "??-??-??-??-??-??" + "\t" + "incomplete\n");
+            ArpCacheTableArea.append(ArpCacheIpWrite.getText() + " " + "??-??-??-??-??-??" + " " + "incomplete\n");
             byte[] dstEthernetAddress = new byte[6];
             byte[] dstIpAddress = new byte[4];
 
@@ -918,7 +918,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          if (e.getSource() == ProxyDelete_Accept_Button) {
             byte[] deleteIpAddress = new byte[4];
 
-            String dstIp = DeleteIpWrite.getText();
+            String dstIp = DeleteProxyIpWrite.getText();
 
             String[] byte_delete_ip = dstIp.split("\\."); //Sting MAC 주소를"-"로 나눔
             for (int i = 0; i < 4; i++) {
