@@ -82,7 +82,6 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
    JButton Proxy_Arp_Delete_Button;
    JButton Gratuitous_Arp_Ip_Send_Button;
    JButton ArpDlg_Exit_Button;
-   JButton ArpDlg_Cancel_Button;
    JButton ProxyArpEntry_Accept_Button;
    JButton ProxyArpEntry_Cancel_Button;
    JButton My_Address_Button;
@@ -480,19 +479,20 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          gratuitousArpPanel.add(lblgratuitousarpip);
 
          ArpDlg_Exit_Button = new JButton("Exit");
-         ArpDlg_Exit_Button.setBounds(500, 340, 100, 30);
+         ArpDlg_Exit_Button.setBounds(330, 380, 100, 30);
          ArpDlg_Exit_Button.addActionListener(new setAddressListener());
          contentPane.add(ArpDlg_Exit_Button);
 
-         ArpDlg_Cancel_Button = new JButton("Cancel");
-         ArpDlg_Cancel_Button.setBounds(500, 380, 100, 30);
-         ArpDlg_Cancel_Button.addActionListener(new setAddressListener());
-         contentPane.add(ArpDlg_Cancel_Button);
-
          My_Address_Button = new JButton("Setting");
-         My_Address_Button.setBounds(320, 360, 100, 30);
+         My_Address_Button.setBounds(330, 340, 100, 30);
          My_Address_Button.addActionListener(new setAddressListener());
          contentPane.add(My_Address_Button);
+
+         ArpDlg_Exit_Button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+               dispose();
+            }
+         });
 
          setVisible(true);
       }
@@ -954,6 +954,10 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
 
    public void proxyTablePrint(String s) {
       ProxyArpEntryArea.setText(s);
+   }
+
+   public void setDstMacAddress(String s) {
+      dstMacAddress.setText(s);
    }
 
    @Override
