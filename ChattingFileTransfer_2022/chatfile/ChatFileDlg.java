@@ -97,6 +97,9 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
    String Text;
 
    boolean connection = false;
+   
+   private String ip;
+   private String address;
 
    public static void main(String[] args) {
       m_LayerMgr.AddLayer(new NILayer("NI"));
@@ -307,8 +310,15 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
       });
 
       try {// 저절로 MAC주소 보이게하기
-         srcMacAddress.append(get_MacAddress(
-                 ((NILayer) m_LayerMgr.GetLayer("NI")).GetAdapterObject(adapterNumber).getHardwareAddress()));
+    	  address = get_MacAddress(((NILayer) m_LayerMgr.GetLayer("NI")).GetAdapterObject(adapterNumber).getHardwareAddress());
+          srcMacAddress.append(address);
+          InetAddress local;
+          local = InetAddress.getLocalHost();
+          if (local == null)
+        	  ip = null;
+          else
+        	  ip = local.getHostAddress();
+          srcIpAddress.append(ip);
       } catch (IOException e1) {
          // TODO Auto-generated catch block
          e1.printStackTrace();
@@ -354,7 +364,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          myEthernetWrite.setBounds(2, 2, 159, 30);
          myEthernetInputPanel.add(myEthernetWrite);
          myEthernetWrite.setColumns(10);
-         myEthernetWrite.setText("00-0C-29-ED-A4-F4"); //죽여버려야 함
+         myEthernetWrite.setText(address);
 
          lblmyethernet = new JLabel("Ethernet Source");
          lblmyethernet.setBounds(20, 340, 100, 30);
@@ -370,7 +380,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          myIpWrite.setBounds(2, 2, 159, 30);
          myIpInputPanel.add(myIpWrite);
          myIpWrite.setColumns(10);
-         myIpWrite.setText("169.254.115.57"); // 죽여야함
+         myIpWrite.setText(ip);
 
          lblmyip = new JLabel("IP Source");
          lblmyip.setBounds(40, 380, 100, 30);
