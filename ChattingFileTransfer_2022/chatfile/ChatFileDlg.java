@@ -741,12 +741,13 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
                   ((NILayer) m_LayerMgr.GetLayer("NI")).SetAdapterNumber(adapterNumber);
                   connection = true;
                }
-
+               
+               setDstMacAddress("");
                ((ARPLayer) m_LayerMgr.GetLayer("ARP")).autoChkArp(byteDstIpAddress);
+               
 
 
-
-//               jbt_open.setEnabled(true);
+               jbt_open.setEnabled(true);
 //               Setting_Button.setText("Reset"); //setting 버튼 누르면 리셋으로 바뀜
 //               dstMacAddress.setEnabled(false);  //버튼을 비활성화시킴
 //               srcMacAddress.setEnabled(false);  //버튼을 비활성화시킴
