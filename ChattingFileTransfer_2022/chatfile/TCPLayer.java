@@ -10,7 +10,7 @@ public class TCPLayer implements BaseLayer {
 	ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
 	_TCP_Frame m_sHeader;
 	int Header_size = 24;
-	
+
 	static int CHAT_PORT = 0;
 	static int FILE_PORT = 1;
 
@@ -54,65 +54,20 @@ public class TCPLayer implements BaseLayer {
 	public boolean fileSend(byte[] input, int length) {
 		m_sHeader.tcp_sport = intToByte2(FILE_PORT);
 		m_sHeader.tcp_dport = intToByte2(FILE_PORT);
-		return Send(input, length, 8);
+		return Send(input, length);
 	}
 
 	public boolean chatSend(byte[] input, int length) {
 		m_sHeader.tcp_sport = intToByte2(CHAT_PORT);
 		m_sHeader.tcp_dport = intToByte2(CHAT_PORT);
-		return Send(input, length, 4);
+		return Send(input, length);
 	}
 
-	public boolean Send(byte[] input, int length, int len) {
-		/* 이더넷 최대길이 1500byte
-		 * 최대 데이터 길이  = 1500 -((파일or챗 헤더)+tcp헤더+ip헤더)*/
-		int maxDataLen = 1500-(len+24+20);
+	public boolean Send(byte[] input, int length) {
 		byte[] bytes;
-		if (length > maxDataLen) {
-			fragSend(input, length, maxDataLen);
-		} else {
-			m_sHeader.tcp_flag = 0x00;// 단편화 안 된 경우
-			bytes = ObjToByte(m_sHeader, input, length);
-			this.GetUnderLayer(0).Send(bytes, bytes.length);
-		}
-		return true;
-	}
-
-	private void fragSend(byte[] input, int length, int maxDataLen) {
-
-		byte[] bytes = new byte[maxDataLen];
-		int i = 0;
-
-		// 첫번째 전송
-		m_sHeader.tcp_seq = intToByte2(i);
-		m_sHeader.tcp_flag = 0x01;
-		System.arraycopy(input, 0, bytes, 0, maxDataLen);
-		bytes = ObjToByte(m_sHeader, bytes, maxDataLen);
+		bytes = ObjToByte(m_sHeader, input, length);
 		this.GetUnderLayer(0).Send(bytes, bytes.length);
-
-		int maxLen = length / maxDataLen;
-
-		int len = maxDataLen;
-		if (length % maxDataLen != 0) {
-			len = length % maxDataLen;
-			maxLen++;
-		}
-		for (i = 1; i < maxLen; i++) {
-			m_sHeader.tcp_seq = intToByte2(i);
-			if (i == maxLen - 1) {
-				m_sHeader.tcp_flag = (byte) (0x02);
-				if (len != maxDataLen) {
-					bytes = new byte[len];
-				}
-				System.arraycopy(input, maxDataLen * i, bytes, 0, len);
-				bytes = ObjToByte(m_sHeader, bytes, len);
-				this.GetUnderLayer(0).Send(bytes, bytes.length);
-			} else {
-				System.arraycopy(input, maxDataLen * i, bytes, 0, maxDataLen);
-				bytes = ObjToByte(m_sHeader, bytes, maxDataLen);
-				this.GetUnderLayer(0).Send(bytes, bytes.length);
-			}
-		}
+		return true;
 	}
 
 	public boolean arpSend() {
@@ -138,9 +93,7 @@ public class TCPLayer implements BaseLayer {
 		return false;
 	}
 
-	public byte[] ObjToByte(_TCP_Frame Header, byte[] input, int length) {// data에
-																			// 헤더
-																			// 붙여주기
+	public byte[] ObjToByte(_TCP_Frame Header, byte[] input, int length) {
 		byte[] buf = new byte[length + Header_size];
 		for (int i = 0; i < 2; i++) {
 			buf[i] = Header.tcp_sport[i];
