@@ -355,7 +355,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          myEthernetWrite.setBounds(2, 2, 159, 30);
          myEthernetInputPanel.add(myEthernetWrite);
          myEthernetWrite.setColumns(10);
-         myEthernetWrite.setText("00-0C-29-C9-F9-6D"); //죽여버려야 함
+         myEthernetWrite.setText("00-0C-29-ED-A4-F4"); //죽여버려야 함
 
          lblmyethernet = new JLabel("Ethernet Source");
          lblmyethernet.setBounds(20, 340, 100, 30);
@@ -371,7 +371,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          myIpWrite.setBounds(2, 2, 159, 30);
          myIpInputPanel.add(myIpWrite);
          myIpWrite.setColumns(10);
-         myIpWrite.setText("169.254.206.74"); // 죽여야함
+         myIpWrite.setText("169.254.115.57"); // 죽여야함
 
          lblmyip = new JLabel("IP Source");
          lblmyip.setBounds(40, 380, 100, 30);
@@ -404,7 +404,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          ArpCacheIpWrite.setBounds(2, 2, 159, 30);
          arpCacheIpInputPanel.add(ArpCacheIpWrite);
          ArpCacheIpWrite.setColumns(10);
-         ArpCacheIpWrite.setText("169.254.52.73"); // I will kill you
+         ArpCacheIpWrite.setText("169.254.255.131"); // I will kill you
 
          Arp_Cache_Item_Delete_Button = new JButton("Item Delete");
          Arp_Cache_Item_Delete_Button.setBounds(20, 230, 120, 30);
