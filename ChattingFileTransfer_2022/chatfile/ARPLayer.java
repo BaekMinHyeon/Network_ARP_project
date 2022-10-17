@@ -158,7 +158,12 @@ public class ARPLayer implements BaseLayer {
                     && addr.ip_target_addr.addr[1] ==  m_sHeader.ip_target_addr.addr[1]
                     && addr.ip_target_addr.addr[2] ==  m_sHeader.ip_target_addr.addr[2]
                     && addr.ip_target_addr.addr[3] ==  m_sHeader.ip_target_addr.addr[3]) {
-                addr.enet_target_addr.addr = m_sHeader.enet_target_addr.addr;
+                addr.enet_target_addr.addr[0] = m_sHeader.enet_target_addr.addr[0];
+                addr.enet_target_addr.addr[1] = m_sHeader.enet_target_addr.addr[1];
+                addr.enet_target_addr.addr[2] = m_sHeader.enet_target_addr.addr[2];
+                addr.enet_target_addr.addr[3] = m_sHeader.enet_target_addr.addr[3];
+                addr.enet_target_addr.addr[4] = m_sHeader.enet_target_addr.addr[4];
+                addr.enet_target_addr.addr[5] = m_sHeader.enet_target_addr.addr[5];
                 printArp();
                 return true;
             }
@@ -170,10 +175,10 @@ public class ARPLayer implements BaseLayer {
 
     public boolean ArpTableDelete(byte[] ip_addr) {
         for(int i = 0; i < arpTable.size(); i++){
-            if (arpTable.get(i).ip_target_addr.addr[0] ==  m_sHeader.ip_target_addr.addr[0]
-                    && arpTable.get(i).ip_target_addr.addr[1] ==  m_sHeader.ip_target_addr.addr[1]
-                    && arpTable.get(i).ip_target_addr.addr[2] ==  m_sHeader.ip_target_addr.addr[2]
-                    && arpTable.get(i).ip_target_addr.addr[3] ==  m_sHeader.ip_target_addr.addr[3]) {
+            if (arpTable.get(i).ip_target_addr.addr[0] ==  ip_addr[0]
+                    && arpTable.get(i).ip_target_addr.addr[1] ==  ip_addr[1]
+                    && arpTable.get(i).ip_target_addr.addr[2] ==  ip_addr[2]
+                    && arpTable.get(i).ip_target_addr.addr[3] ==  ip_addr[3]) {
                 arpTable.remove(i);
                 printArp();
                 return true;
@@ -194,8 +199,9 @@ public class ARPLayer implements BaseLayer {
                     && proxyTable.get(i).ip_target_addr.addr[1] ==  ip_addr[1]
                     && proxyTable.get(i).ip_target_addr.addr[2] ==  ip_addr[2]
                     && proxyTable.get(i).ip_target_addr.addr[3] ==  ip_addr[3]) {
-                printProxyArp();
+             
                 proxyTable.remove(i);
+                printProxyArp();
                 return true;
             }
         }
@@ -209,15 +215,13 @@ public class ARPLayer implements BaseLayer {
     }
 
     public synchronized boolean Receive(byte[] input) {
-        byte[] data;
-        int temp_type = byte2ToInt(input[6], input[7]);
+    	int temp_type = byte2ToInt(input[6], input[7]);
         if (temp_type == 1) {
             DestinationSet(input);
             ArpTableSet();
             if(!isMyPacket(input) && chkAddr(input)){
                 this.ReturnSend();
                 //화면 출력
-
                 return true;
             }
             else{
@@ -470,11 +474,11 @@ public class ARPLayer implements BaseLayer {
 
         byte[] opcode = new byte[2];
 
-        _ARP_ENTHERNET_ADDR enet_sender_addr = ARPLayer.this.new _ARP_ENTHERNET_ADDR();
-        _ARP_IP_ADDR ip_sender_addr = ARPLayer.this.new _ARP_IP_ADDR();
+        _ARP_ENTHERNET_ADDR enet_sender_addr = new _ARP_ENTHERNET_ADDR();
+        _ARP_IP_ADDR ip_sender_addr = new _ARP_IP_ADDR();
 
-        _ARP_ENTHERNET_ADDR enet_target_addr = ARPLayer.this.new _ARP_ENTHERNET_ADDR();
-        _ARP_IP_ADDR ip_target_addr = ARPLayer.this.new _ARP_IP_ADDR();
+        _ARP_ENTHERNET_ADDR enet_target_addr = new _ARP_ENTHERNET_ADDR();
+        _ARP_IP_ADDR ip_target_addr = new _ARP_IP_ADDR();
 
         public _ARP_Frame() {
             hard_type[0] = 0x01;
