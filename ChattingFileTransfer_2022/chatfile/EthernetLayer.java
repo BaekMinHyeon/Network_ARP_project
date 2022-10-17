@@ -65,11 +65,8 @@ public class EthernetLayer implements BaseLayer {
 	}
 
 	public boolean Send(byte[] input, int length) {
-		if (isBroadcast(m_sHeader.enet_dstaddr.addr)) // broadcast
-			m_sHeader.enet_type = intToByte2(0xff);
-		else
-			// nomal
-			m_sHeader.enet_type = intToByte2(0x0800);
+		
+		m_sHeader.enet_type = intToByte2(0x0800);
 
 		byte[] bytes = ObjToByte(m_sHeader, input, length);
 		this.GetUnderLayer(0).Send(bytes, bytes.length);
