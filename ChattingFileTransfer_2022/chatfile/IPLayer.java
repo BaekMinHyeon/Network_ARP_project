@@ -220,10 +220,6 @@ public class IPLayer implements BaseLayer {
         return (int)(((value1 & 0xff) << 8) | (value2 & 0xff));
     }
     
-    private int byte4ToInt(byte value1, byte value2, byte value3, byte value4){
-       return (int)(((value1 & 0xff) << 24) | ((value2 & 0xff) << 16) | ((value3 & 0xff) << 8) | (value4 & 0xff));
-    }
-    
     public boolean chkSrc(byte[] input){ // 내가 보낸 것인지 확인
        for(int i = 0; i < 4; i++)
           if(m_sHeader.ip_src.addr[i] != input[12 + i])

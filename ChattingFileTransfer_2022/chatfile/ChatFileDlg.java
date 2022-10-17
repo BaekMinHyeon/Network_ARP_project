@@ -414,7 +414,6 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
          ArpCacheIpWrite.setBounds(2, 2, 159, 30);
          arpCacheIpInputPanel.add(ArpCacheIpWrite);
          ArpCacheIpWrite.setColumns(10);
-         ArpCacheIpWrite.setText("169.254.255.131"); // I will kill you
 
          Arp_Cache_Item_Delete_Button = new JButton("Item Delete");
          Arp_Cache_Item_Delete_Button.setBounds(20, 230, 120, 30);
@@ -886,7 +885,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
             }
 
             byte[] dstIpAddress = new byte[4];
-            String dstIp = ArpCacheIpWrite.getText();
+            String dstIp = myIpWrite.getText();
             String[] byte_dst_ip = dstIp.split("\\."); //Sting MAC 주소를"-"로 나눔
             for (int i = 0; i < 4; i++) {
                dstIpAddress[i] =  (byte) (Integer.parseInt(byte_dst_ip[i])); //16비트 (2byte)

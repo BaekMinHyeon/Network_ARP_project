@@ -59,7 +59,6 @@ public class ChatAppLayer implements BaseLayer {
 	public boolean Send(byte[] input, int length) {
 		byte[] bytes;
 		m_sHeader.capp_totlen = intToByte2(length);
-		m_sHeader.capp_type = (byte) (0x00);
 		bytes = objToByte(m_sHeader, input, input.length);
 		TCPLayer tcpLayer = (TCPLayer)this.GetUnderLayer(0);
 		tcpLayer.chatSend(bytes, bytes.length);
