@@ -49,7 +49,8 @@ public class ARPLayer implements BaseLayer {
 
     public byte[] ProxyObjToByte(_ARP_Frame Header, byte[] input, int length) {//data에 헤더 붙여주
         byte[] temp = new byte[1];
-
+        input[6] = Header.opcode[0];
+        input[7] = Header.opcode[1];
         for(int i = 0; i < 6; i++) {
             temp[0] = input[i+8];
             input[i+8] = m_sHeader.enet_sender_addr.addr[i];;

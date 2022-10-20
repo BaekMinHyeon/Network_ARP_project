@@ -890,7 +890,7 @@ public class ChatFileDlg extends JFrame implements BaseLayer {
             for (int i = 0; i < 4; i++) {
                dstIpAddress[i] =  (byte) (Integer.parseInt(byte_dst_ip[i])); //16비트 (2byte)
             }
-
+            ((EthernetLayer) m_LayerMgr.GetLayer("Ethernet")).SetEnetSrcAddress(gratuitousEthernetAddress);
             ((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetEnetSrcAddress(gratuitousEthernetAddress);
             ((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetEnetDstAddress(gratuitousEthernetAddress);
             ((ARPLayer) m_LayerMgr.GetLayer("ARP")).SetIpDstAddress(dstIpAddress);
